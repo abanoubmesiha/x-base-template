@@ -22,6 +22,7 @@ const FruitSelector = () => {
               <SelectItem value="Apple">Apple</SelectItem>
               <SelectItem value="Banana">Banana</SelectItem>
               <SelectItem value="Strawberry">Strawberry</SelectItem>
+              <SelectItem value="test">test</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
