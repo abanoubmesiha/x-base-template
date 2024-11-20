@@ -14,7 +14,7 @@ const Preview_Runner_Do_Not_Edit = () => {
 
   useEffect(() => {
     const importTasks = async () => {
-      const taskModules = import.meta.glob('./tasks/**/*.jsx');
+      const taskModules = import.meta.glob('./tasks/**/*.{jsx,tsx}');
       const loadedTasks = [];
 
       for (const path in taskModules) {
