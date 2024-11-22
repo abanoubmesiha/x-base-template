@@ -6,47 +6,58 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const FallingObject = ({ type, x, y }) => {
   const color =
-    type === "normal" ? "black" : type === "green" ? "green" : "red";
+    type === "normal"
+      ? "black"
+      : type === "powerUp"
+      ? "green"
+      : "penalty"
+      ? "red"
+      : "black";
   return (
     <div
-      className={`absolute w-6 h-6 rounded-full bg-${color}`}
-      style={{ left: `${x}px`, top: `${y}px` }}
+      className="absolute w-6 h-6 rounded-full"
+      style={{ backgroundColor: color, left: `${x}px`, top: `${y}px` }}
     ></div>
   );
 };
 
-const Missile = ({ x, y }) => (
-  <div
-    className="absolute w-4 h-10 bg-red-600"
-    style={{ left: `${x}px`, top: `${y}px` }}
-  ></div>
-);
-
 const App = () => {
   const [score, setScore] = useState(0);
-  const [basket, setBasket] = useState({ x: 400, width: 80 });
+  const [basket, setBasket] = useState({ x: 400, y: 580, width: 80 });
   const [objects, setObjects] = useState([]);
-  const [missiles, setMissiles] = useState([]);
   const [slowMotion, setSlowMotion] = useState(false);
   const [lastHit, setLastHit] = useState(0);
   const [lastScore, setLastScore] = useState(0);
-  const gameArea = useRef(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setBasket((basket) => ({ ...basket, x: e.clientX - basket.width / 2 }));
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowLeft") {
+        setBasket((prev) => ({ ...prev, dx: -5 }));
+      } else if (e.key === "ArrowRight") {
+        setBasket((prev) => ({ ...prev, dx: 5 }));
+      }
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    const handleKeyUp = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        setBasket((prev) => ({ ...prev, dx: 0 }));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
   }, []);
 
   useEffect(() => {
     const createObject = () => {
-      const types = ["normal", "green", "red"];
+      const types = ["normal", "powerUp", "penalty"];
       const type = types[Math.floor(Math.random() * types.length)];
       setObjects((objects) => [
         ...objects,
@@ -58,36 +69,32 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const createMissile = () => {
-      setMissiles((missiles) => [
-        ...missiles,
-        { x: Math.random() * 800, y: 0, angle: Math.PI / 2 },
-      ]);
-    };
-    const missileInterval = setInterval(createMissile, 10000);
-    return () => clearInterval(missileInterval);
-  }, []);
-
-  useEffect(() => {
     const gameLoop = () => {
+      setBasket((basket) => ({
+        ...basket,
+        x: Math.max(
+          0,
+          Math.min(800 - basket.width, basket.x + (basket.dx || 0))
+        ),
+      }));
       setObjects((objects) =>
         objects
           .map((object) => ({ ...object, y: object.y + (slowMotion ? 1 : 2) }))
           .filter((object) => {
             if (
               object.x < basket.x + basket.width &&
-              object.x + 6 > basket.x &&
-              object.y < 500 + 10 &&
-              object.y + 6 > 500
+              object.x + 24 > basket.x &&
+              object.y < basket.y + 24 &&
+              object.y + 24 > basket.y
             ) {
-              if (object.type === "green") {
+              if (object.type === "powerUp") {
                 setBasket((basket) => ({
                   ...basket,
                   width: basket.width + 20,
                 }));
                 setSlowMotion(true);
                 setTimeout(() => setSlowMotion(false), 3000);
-              } else if (object.type === "red") {
+              } else if (object.type === "penalty") {
                 setBasket((basket) => ({
                   ...basket,
                   width: Math.max(basket.width - 20, 40),
@@ -100,67 +107,23 @@ const App = () => {
             return object.y < 600;
           })
       );
-
-      setMissiles((missiles) =>
-        missiles
-          .map((missile) => {
-            const targetX = basket.x + basket.width / 2;
-            const targetAngle = Math.atan2(
-              510 - missile.y,
-              targetX - missile.x
-            );
-            const angleDiff = targetAngle - missile.angle;
-            const turnRate = Math.PI / 4 / 60;
-            if (angleDiff > turnRate) {
-              missile.angle += turnRate;
-            } else if (angleDiff < -turnRate) {
-              missile.angle -= turnRate;
-            } else {
-              missile.angle = targetAngle;
-            }
-            return {
-              ...missile,
-              x: missile.x + Math.cos(missile.angle) * 5,
-              y: missile.y + Math.sin(missile.angle) * 5,
-            };
-          })
-          .filter((missile) => {
-            if (
-              missile.x < basket.x + basket.width &&
-              missile.x + 4 > basket.x &&
-              missile.y < 500 + 10 &&
-              missile.y + 10 > 500
-            ) {
-              if (Date.now() - lastHit < 10000 && score === lastScore) {
-                alert("Game Over");
-                window.location.reload();
-              } else {
-                setBasket((basket) => ({
-                  ...basket,
-                  width: Math.max(basket.width / 2, 40),
-                }));
-                setLastHit(Date.now());
-                setLastScore(score);
-              }
-              return false;
-            }
-            return missile.y < 600;
-          })
-      );
     };
     const gameInterval = setInterval(gameLoop, 16);
     return () => clearInterval(gameInterval);
   }, [basket, slowMotion, lastHit, lastScore, score]);
 
   return (
-    <div className="App">
-      <Card>
+    <div className="App flex justify-center items-center h-screen bg-blue-300">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Catch the Falling Objects Game</CardTitle>
           <CardDescription>Score: {score}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div ref={gameArea} className="relative w-full h-full bg-gray-100">
+          <div
+            className="relative w-full h-full bg-white border-2 border-black"
+            style={{ height: "600px" }}
+          >
             {objects.map((object, index) => (
               <FallingObject
                 key={index}
@@ -169,17 +132,14 @@ const App = () => {
                 y={object.y}
               />
             ))}
-            {missiles.map((missile, index) => (
-              <Missile key={index} x={missile.x} y={missile.y} />
-            ))}
             <div
-              className="absolute bottom-0 bg-blue-500 h-2"
+              className="absolute bottom-0 bg-black h-4"
               style={{ left: `${basket.x}px`, width: `${basket.width}px` }}
             ></div>
           </div>
         </CardContent>
         <CardFooter>
-          <div className="text-sm">Control the basket with your mouse!</div>
+          <div className="text-sm">Use arrow keys to move the basket.</div>
         </CardFooter>
       </Card>
     </div>
