@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useEffect, useState } from "react";
 
+// Default terms and definitions
 const defaultTerms = [
   {
     term: "React",
@@ -16,23 +17,28 @@ const defaultTerms = [
   },
 ];
 
+// Function to shuffle an array in place
 function shuffleArray(array) {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
+    // Swap elements at indices i and j
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
 }
 
+// Component for entering terms and definitions
 function TermInput({ onSubmit }) {
   const [jsonInput, setJsonInput] = useState(
     JSON.stringify(defaultTerms, null, 2)
   );
 
+  // Handle the submission of JSON input
   const handleSubmit = () => {
     try {
       const terms = JSON.parse(jsonInput);
+      // Pass the parsed terms to the parent component
       onSubmit(terms);
     } catch (error) {
       alert("Invalid JSON format. Please check your input.");
@@ -57,6 +63,7 @@ function TermInput({ onSubmit }) {
   );
 }
 
+// Component for the matching game
 function MatchingGame({ terms }) {
   const [shuffledTerms, setShuffledTerms] = useState([]);
   const [shuffledDefinitions, setShuffledDefinitions] = useState([]);
@@ -65,11 +72,13 @@ function MatchingGame({ terms }) {
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [score, setScore] = useState(0);
 
+  // Shuffle terms and definitions when the terms prop changes
   useEffect(() => {
     setShuffledTerms(shuffleArray(terms.map((item) => item.term)));
     setShuffledDefinitions(shuffleArray(terms.map((item) => item.definition)));
   }, [terms]);
 
+  // Handle term click and check for a match if a definition is selected
   const handleTermClick = (term) => {
     setSelectedTerm(term);
     if (selectedDefinition) {
@@ -77,6 +86,7 @@ function MatchingGame({ terms }) {
     }
   };
 
+  // Handle definition click and check for a match if a term is selected
   const handleDefinitionClick = (definition) => {
     setSelectedDefinition(definition);
     if (selectedTerm) {
@@ -84,6 +94,7 @@ function MatchingGame({ terms }) {
     }
   };
 
+  // Check if the selected term and definition match
   const checkMatch = (term, definition) => {
     const matchingPair = terms.find(
       (item) => item.term === term && item.definition === definition
@@ -92,10 +103,12 @@ function MatchingGame({ terms }) {
       setMatchedPairs([...matchedPairs, matchingPair]);
       setScore(score + 1);
     }
+    // Reset selected term and definition
     setSelectedTerm(null);
     setSelectedDefinition(null);
   };
 
+  // Check if the game is complete
   const isGameComplete = matchedPairs.length === terms.length;
 
   return (
@@ -157,10 +170,12 @@ function MatchingGame({ terms }) {
   );
 }
 
+// Main App component
 export default function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [terms, setTerms] = useState([]);
 
+  // Handle term submission and start the game
   const handleTermSubmit = (submittedTerms) => {
     setTerms(submittedTerms);
     setGameStarted(true);
