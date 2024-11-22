@@ -27,11 +27,13 @@ const FallingObject = ({ type, x, y }) => {
 
 const App = () => {
   const [score, setScore] = useState(0);
-  const [basket, setBasket] = useState({ x: 400, y: 580, width: 80 });
+  const [basket, setBasket] = useState({
+    x: window.outerWidth / 2 - 40,
+    y: 580,
+    width: 80,
+  });
   const [objects, setObjects] = useState([]);
   const [slowMotion, setSlowMotion] = useState(false);
-  const [lastHit, setLastHit] = useState(0);
-  const [lastScore, setLastScore] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -61,7 +63,7 @@ const App = () => {
       const type = types[Math.floor(Math.random() * types.length)];
       setObjects((objects) => [
         ...objects,
-        { type, x: Math.random() * 780, y: 0 },
+        { type, x: Math.random() * (window.outerWidth - 30), y: 0 },
       ]);
     };
     const objectInterval = setInterval(createObject, 1000);
@@ -74,7 +76,10 @@ const App = () => {
         ...basket,
         x: Math.max(
           0,
-          Math.min(800 - basket.width, basket.x + (basket.dx || 0))
+          Math.min(
+            window.outerWidth - basket.width,
+            basket.x + (basket.dx || 0)
+          )
         ),
       }));
       setObjects((objects) =>
@@ -110,7 +115,7 @@ const App = () => {
     };
     const gameInterval = setInterval(gameLoop, 16);
     return () => clearInterval(gameInterval);
-  }, [basket, slowMotion, lastHit, lastScore, score]);
+  }, [basket, slowMotion, score]);
 
   return (
     <div className="App flex justify-center items-center h-screen bg-blue-300">
