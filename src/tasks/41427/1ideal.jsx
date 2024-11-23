@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useCallback, useEffect, useState } from "react";
 
+// Define game area dimensions
 const GAME_WIDTH = window.outerWidth / 2;
 const GAME_HEIGHT = window.outerHeight - 250;
 
+// Fighter component representing a fighter jet
 const Fighter = ({ x, y, rotation, color }) => (
   <div
     className="absolute w-10 h-10"
@@ -20,6 +22,7 @@ const Fighter = ({ x, y, rotation, color }) => (
   </div>
 );
 
+// Bullet component representing a bullet
 const Bullet = ({ x, y }) => (
   <div
     className="absolute w-2 h-2 bg-yellow-400 rounded-full"
@@ -27,6 +30,7 @@ const Bullet = ({ x, y }) => (
   />
 );
 
+// GameOverlay component displaying score and health
 const GameOverlay = ({ score, health }) => (
   <div className="absolute top-0 left-0 p-4 text-black">
     <div>Score: {score}</div>
@@ -35,6 +39,7 @@ const GameOverlay = ({ score, health }) => (
 );
 
 export default function App() {
+  // State variables
   const [playerPos, setPlayerPos] = useState({
     x: GAME_WIDTH / 2,
     y: GAME_HEIGHT - 50,
@@ -47,6 +52,7 @@ export default function App() {
   const [health, setHealth] = useState(100);
   const [gameOver, setGameOver] = useState(false);
 
+  // Handle player movement and shooting
   const movePlayer = useCallback(
     (e) => {
       const speed = 5;
@@ -82,34 +88,37 @@ export default function App() {
     [playerPos]
   );
 
+  // Add event listener for keydown
   useEffect(() => {
     window.addEventListener("keydown", movePlayer);
     return () => window.removeEventListener("keydown", movePlayer);
   }, [movePlayer]);
 
+  // Main game loop
   useEffect(() => {
     if (gameOver) return;
 
     const gameLoop = setInterval(() => {
-      // Move bullets
+      // Move bullets upwards
       setBullets((prev) =>
         prev
           .filter((bullet) => bullet.y > 0)
           .map((bullet) => ({ ...bullet, y: bullet.y - 5 }))
       );
+      // Move enemy bullets downwards
       setEnemyBullets((prev) =>
         prev
           .filter((bullet) => bullet.y < GAME_HEIGHT)
           .map((bullet) => ({ ...bullet, y: bullet.y + 5 }))
       );
 
-      // Move enemy
+      // Move enemy jet
       setEnemyPos((prev) => ({
         x: prev.x + Math.sin(Date.now() / 1000) * 2,
         y: prev.y + Math.cos(Date.now() / 1000),
       }));
 
-      // Enemy shooting
+      // Enemy shooting logic
       if (Math.random() < 0.02) {
         setEnemyBullets((prev) => [
           ...prev,
@@ -117,7 +126,7 @@ export default function App() {
         ]);
       }
 
-      // Collision detection
+      // Bullet collision detection with enemy
       bullets.forEach((bullet) => {
         if (
           bullet.x > enemyPos.x &&
@@ -130,6 +139,7 @@ export default function App() {
         }
       });
 
+      // Bullet collision detection with player
       enemyBullets.forEach((bullet) => {
         if (
           bullet.x > playerPos.x &&
@@ -142,6 +152,7 @@ export default function App() {
         }
       });
 
+      // Check if health is zero
       if (health <= 0) {
         setGameOver(true);
       }
@@ -150,6 +161,7 @@ export default function App() {
     return () => clearInterval(gameLoop);
   }, [bullets, enemyBullets, enemyPos, health, playerPos, gameOver]);
 
+  // Restart game function
   const restartGame = () => {
     setPlayerPos({ x: GAME_WIDTH / 2, y: GAME_HEIGHT - 50 });
     setEnemyPos({ x: GAME_WIDTH / 2, y: 50 });
