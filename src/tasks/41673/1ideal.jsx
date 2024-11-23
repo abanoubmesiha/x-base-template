@@ -25,9 +25,9 @@ const QueueItem = ({ position, name, current }) => (
 
 // Main App component
 export default function App() {
-  const [queue, setQueue] = useState([]);
-  const [name, setName] = useState("");
-  const [currentTurn, setCurrentTurn] = useState(0);
+  const [queue, setQueue] = useState([]); // State for queue
+  const [name, setName] = useState(""); // State for name input
+  const [currentTurn, setCurrentTurn] = useState(0); // State for current turn
 
   // Function to join the queue
   const joinQueue = () => {
