@@ -1,6 +1,6 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useEffect, useRef, useState } from "react";
 
 function App() {
   return (
@@ -20,40 +20,40 @@ function Game() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-
+    const context = canvas.getContext('2d');
+    
     const draw = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
-
+      
       // Draw player
-      context.fillStyle = "blue";
+      context.fillStyle = 'blue';
       context.fillRect(playerPosition.x, playerPosition.y, 20, 20);
-
+      
       // Draw enemy
-      context.fillStyle = "red";
+      context.fillStyle = 'red';
       context.fillRect(enemyPosition.x, enemyPosition.y, 20, 20);
-
+      
       // Draw bullets
-      context.fillStyle = "black";
-      bullets.forEach((bullet) => {
+      context.fillStyle = 'black';
+      bullets.forEach(bullet => {
         context.fillRect(bullet.x, bullet.y, 5, 5);
       });
     };
 
     if (gameStarted) {
       const interval = setInterval(() => {
-        setEnemyPosition((prev) => ({
+        setEnemyPosition(prev => ({
           x: prev.x + (Math.random() - 0.5) * 2,
-          y: prev.y + 1,
+          y: prev.y + 1
         }));
 
-        setBullets((prevBullets) =>
-          prevBullets.map((b) => ({ ...b, y: b.y - 5 }.filter((b) => b.y > 0)))
+        setBullets(prevBullets => 
+          prevBullets.map(b => ({...b, y: b.y - 5}).filter(b => b.y > 0)
         );
 
         // Check collision
         if (
-          enemyPosition.y > 380 &&
+          enemyPosition.y > 380 && 
           Math.abs(enemyPosition.x - playerPosition.x) < 20
         ) {
           alert(`Game Over! Your score: ${score}`);
@@ -62,13 +62,10 @@ function Game() {
         }
 
         // Check if bullet hits enemy
-        setBullets((prev) =>
-          prev.filter((b) => {
-            if (
-              Math.abs(b.x - enemyPosition.x) < 10 &&
-              b.y < enemyPosition.y + 10
-            ) {
-              setScore((s) => s + 1);
+        setBullets(prev => 
+          prev.filter(b => {
+            if (Math.abs(b.x - enemyPosition.x) < 10 && b.y < enemyPosition.y + 10) {
+              setScore(s => s + 1);
               return false;
             }
             return true;
@@ -87,18 +84,15 @@ function Game() {
     if (!gameStarted) return;
 
     const speed = 5;
-    switch (e.key) {
-      case "ArrowLeft":
-        setPlayerPosition((p) => ({ ...p, x: Math.max(0, p.x - speed) }));
+    switch(e.key) {
+      case 'ArrowLeft':
+        setPlayerPosition(p => ({...p, x: Math.max(0, p.x - speed)}));
         break;
-      case "ArrowRight":
-        setPlayerPosition((p) => ({ ...p, x: Math.min(280, p.x + speed) }));
+      case 'ArrowRight':
+        setPlayerPosition(p => ({...p, x: Math.min(280, p.x + speed)}));
         break;
-      case " ":
-        setBullets((b) => [
-          ...b,
-          { x: playerPosition.x + 7.5, y: playerPosition.y },
-        ]);
+      case ' ':
+        setBullets(b => [...b, { x: playerPosition.x + 7.5, y: playerPosition.y }]);
         break;
     }
   };
@@ -109,9 +103,9 @@ function Game() {
         <CardTitle>Air Fighters Dog-Fight</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <canvas
-          ref={canvasRef}
-          width="300"
+        <canvas 
+          ref={canvasRef} 
+          width="300" 
           height="400"
           tabIndex="0"
           onKeyDown={handleKeyDown}
@@ -121,7 +115,7 @@ function Game() {
       <div className="p-4 flex justify-between items-center">
         <p>Score: {score}</p>
         <Button onClick={() => setGameStarted(!gameStarted)}>
-          {gameStarted ? "Pause" : "Start"}
+          {gameStarted ? 'Pause' : 'Start'}
         </Button>
       </div>
     </Card>
