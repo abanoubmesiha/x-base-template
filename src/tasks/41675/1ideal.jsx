@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import React, { useState } from "react";
 
+// MicrophoneControl component to manage individual microphone controls
 const MicrophoneControl = ({
   mic,
   onToggle,
@@ -14,6 +15,7 @@ const MicrophoneControl = ({
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>Mic {mic.id}</span>
+          {/* Toggle switch to activate/deactivate microphone */}
           <Switch
             checked={mic.active}
             onCheckedChange={() => onToggle(mic.id)}
@@ -24,6 +26,7 @@ const MicrophoneControl = ({
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <span className="w-20">Volume:</span>
+            {/* Slider to control volume */}
             <Slider
               value={[mic.volume]}
               onValueChange={(value) => onVolumeChange(mic.id, value[0])}
@@ -35,11 +38,13 @@ const MicrophoneControl = ({
           </div>
           <div className="flex items-center space-x-2">
             <span>Camera:</span>
+            {/* Toggle switch to activate/deactivate camera */}
             <Switch
               checked={mic.cameraActive}
               onCheckedChange={() => onCameraToggle(mic.id)}
             />
           </div>
+          {/* Indicator for volume amplitude */}
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-green-500 transition-all duration-300"
@@ -52,6 +57,7 @@ const MicrophoneControl = ({
   );
 };
 
+// CameraPreview component to show the camera feed preview
 const CameraPreview = ({ mic }) => {
   return (
     <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden">
@@ -62,6 +68,7 @@ const CameraPreview = ({ mic }) => {
   );
 };
 
+// Main App component
 export default function App() {
   const [mics, setMics] = useState([
     { id: 1, active: false, volume: 50, cameraActive: false, amplitude: 0 },
@@ -70,6 +77,7 @@ export default function App() {
     { id: 4, active: false, volume: 50, cameraActive: false, amplitude: 0 },
   ]);
 
+  // Handle toggling microphone active state
   const handleToggle = (id) => {
     setMics((prevMics) =>
       prevMics.map((mic) =>
@@ -78,12 +86,14 @@ export default function App() {
     );
   };
 
+  // Handle changing microphone volume
   const handleVolumeChange = (id, volume) => {
     setMics((prevMics) =>
       prevMics.map((mic) => (mic.id === id ? { ...mic, volume } : mic))
     );
   };
 
+  // Handle toggling camera active state
   const handleCameraToggle = (id) => {
     setMics((prevMics) =>
       prevMics.map((mic) =>
@@ -105,6 +115,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Filter for active cameras
   const activeCameras = mics.filter((mic) => mic.cameraActive);
 
   return (
@@ -113,6 +124,7 @@ export default function App() {
         Theater Microphone Control Panel
       </h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Render controls for each microphone */}
         {mics.map((mic) => (
           <MicrophoneControl
             key={mic.id}
@@ -123,6 +135,7 @@ export default function App() {
           />
         ))}
       </div>
+      {/* Show camera previews if any cameras are active */}
       {activeCameras.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">Camera Previews</h2>
