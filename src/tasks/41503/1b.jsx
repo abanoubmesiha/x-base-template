@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/toaster";
-// import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import React, { useEffect, useState } from "react";
 
 const DeviceStatus = ({ batteryLevel, provider, time }) => (
@@ -79,7 +79,7 @@ export default function App() {
   const [batteryLevel, setBatteryLevel] = useState(85);
   const [provider, setProvider] = useState("Example Network");
   const [time, setTime] = useState("");
-  // const { toast } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -94,25 +94,25 @@ export default function App() {
     setTimeout(() => {
       setConnected(true);
       setLoading(false);
-      // toast({
-      //   title: "Connected successfully",
-      //   description: "Your mobile device is now connected.",
-      // });
+      toast({
+        title: "Connected successfully",
+        description: "Your mobile device is now connected.",
+      });
     }, 5000);
   };
 
   const handleMicToggle = (checked) => {
     setMicActive(checked);
-    // toast({
-    //   title: checked ? "Microphone activated" : "Microphone deactivated",
-    // });
+    toast({
+      title: checked ? "Microphone activated" : "Microphone deactivated",
+    });
   };
 
   const handleCameraToggle = (checked) => {
     setCameraActive(checked);
-    // toast({
-    //   title: checked ? "Camera activated" : "Camera deactivated",
-    // });
+    toast({
+      title: checked ? "Camera activated" : "Camera deactivated",
+    });
   };
 
   return (
