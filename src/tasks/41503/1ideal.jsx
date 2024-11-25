@@ -37,7 +37,12 @@ const SurveillanceControls = ({
       </div>
       <div className="flex items-center justify-between">
         <span>Camera</span>
-        <Switch checked={cameraActive} onCheckedChange={onCameraToggle} />
+        <Switch checked={cameraActive} onCheckedChange={(checked)=>{
+          onCameraToggle(checked)
+          if (!micActive){
+            onMicToggle(checked)
+          }
+        }} />
       </div>
     </CardContent>
   </Card>
