@@ -111,6 +111,7 @@ export default function App() {
           }
         });
         setGrid(newGrid);
+        setDroneCount(positions.length);
       } else {
         alert("Invalid JSON format. Expected array of arrays.");
       }
