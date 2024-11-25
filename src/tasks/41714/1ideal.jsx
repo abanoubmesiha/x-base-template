@@ -9,26 +9,28 @@ const CELL_SIZE = 20;
 
 function Grid({ grid, onCellClick, onCellRightClick, dronePositions }) {
   return (
-    <div className="grid grid-cols-20 gap-0">
-      {grid.map((row, y) =>
-        row.map((cell, x) => (
-          <div
-            key={`${x}-${y}`}
-            className={`w-5 h-5 border border-gray-200 ${
-              cell ? "bg-blue-500" : "bg-white"
-            }`}
-            onClick={() => onCellClick(x, y)}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              onCellRightClick(x, y);
-            }}
-          >
-            {dronePositions.some(([dx, dy]) => dx === x && dy === y) && (
-              <div className="w-3 h-3 bg-red-500 rounded-full m-auto" />
-            )}
-          </div>
-        ))
-      )}
+    <div className="grid gap-0">
+      {grid.map((row, y) => (
+        <div className="grid grid-flow-col gap-0 justify-start">
+          {row.map((cell, x) => (
+            <div
+              key={`${x}-${y}`}
+              className={`w-4 h-4 md:w-5 md:h-5 border border-gray-200 ${
+                cell ? "bg-blue-500" : "bg-white"
+              }`}
+              onClick={() => onCellClick(x, y)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                onCellRightClick(x, y);
+              }}
+            >
+              {dronePositions.some(([dx, dy]) => dx === x && dy === y) && (
+                <div className="w-3 h-3 bg-red-500 rounded-full m-auto" />
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
@@ -120,53 +122,57 @@ export default function App() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Drone Formation Controller</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Draw Formation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Grid
-              grid={grid}
-              onCellClick={handleCellClick}
-              onCellRightClick={handleCellRightClick}
-              dronePositions={dronePositions}
-            />
-            <div className="mt-4">
-              <Input
-                type="number"
-                value={droneCount}
-                onChange={(e) => setDroneCount(parseInt(e.target.value) || 0)}
-                placeholder="Number of drones"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Draw Formation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Grid
+                grid={grid}
+                onCellClick={handleCellClick}
+                onCellRightClick={handleCellRightClick}
+                dronePositions={dronePositions}
+              />
+              <div className="mt-4">
+                <Input
+                  type="number"
+                  value={droneCount}
+                  onChange={(e) => setDroneCount(parseInt(e.target.value) || 0)}
+                  placeholder="Number of drones"
+                  className="mb-2"
+                />
+                <Button onClick={handleSubmit}>
+                  Calculate Drone Positions
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Input JSON</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                placeholder="Enter JSON formation data"
                 className="mb-2"
               />
-              <Button onClick={handleSubmit}>Calculate Drone Positions</Button>
-            </div>
-          </CardContent>
-        </Card>
+              <Button onClick={handleJsonSubmit}>Draw Formation</Button>
+            </CardContent>
+          </Card>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>Drone Positions</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
             <pre className="bg-gray-100 p-2 rounded">
               {JSON.stringify(dronePositions, null, 2)}
             </pre>
             <CopyButton text={JSON.stringify(dronePositions)} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Input JSON</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={jsonInput}
-              onChange={(e) => setJsonInput(e.target.value)}
-              placeholder="Enter JSON formation data"
-              className="mb-2"
-            />
-            <Button onClick={handleJsonSubmit}>Draw Formation</Button>
           </CardContent>
         </Card>
       </div>
