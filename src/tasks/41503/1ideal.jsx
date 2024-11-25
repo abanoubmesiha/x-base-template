@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import React, { useEffect, useState } from "react";
 
+// Component to display device status
 const DeviceStatus = ({ batteryLevel, provider, time }) => (
   <Card className="mb-4">
     <CardHeader>
@@ -18,6 +19,7 @@ const DeviceStatus = ({ batteryLevel, provider, time }) => (
   </Card>
 );
 
+// Component to display surveillance controls
 const SurveillanceControls = ({
   onMicToggle,
   onCameraToggle,
@@ -41,6 +43,7 @@ const SurveillanceControls = ({
   </Card>
 );
 
+// Component to preview the current stream status
 const Preview = ({ micActive, cameraActive }) => (
   <Card className="mb-4">
     <CardHeader>
@@ -58,6 +61,7 @@ const Preview = ({ micActive, cameraActive }) => (
   </Card>
 );
 
+// Component to display remote control interface
 const RemoteControl = () => (
   <Card>
     <CardHeader>
@@ -72,15 +76,16 @@ const RemoteControl = () => (
 );
 
 export default function App() {
-  const [connected, setConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [micActive, setMicActive] = useState(false);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [batteryLevel, setBatteryLevel] = useState(85);
-  const [provider, setProvider] = useState("Example Network");
-  const [time, setTime] = useState("");
-  const { toast } = useToast();
+  const [connected, setConnected] = useState(false); // State for connection status
+  const [loading, setLoading] = useState(false); // State for loading status
+  const [micActive, setMicActive] = useState(false); // State for microphone status
+  const [cameraActive, setCameraActive] = useState(false); // State for camera status
+  const [batteryLevel, setBatteryLevel] = useState(85); // State for battery level
+  const [provider, setProvider] = useState("Example Network"); // State for provider
+  const [time, setTime] = useState(""); // State for current time
+  const { toast } = useToast(); // Hook for displaying toast notifications
 
+  // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -89,6 +94,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Handle connecting to the device
   const handleConnect = () => {
     setLoading(true);
     setTimeout(() => {
@@ -101,6 +107,7 @@ export default function App() {
     }, 5000);
   };
 
+  // Handle toggling microphone
   const handleMicToggle = (checked) => {
     setMicActive(checked);
     toast({
@@ -108,6 +115,7 @@ export default function App() {
     });
   };
 
+  // Handle toggling camera
   const handleCameraToggle = (checked) => {
     setCameraActive(checked);
     toast({
@@ -118,7 +126,6 @@ export default function App() {
   return (
     <div className="container mx-auto p-4 max-w-md">
       <h1 className="text-2xl font-bold mb-4">Mobile Surveillance App</h1>
-
       {!connected && (
         <Button
           onClick={handleConnect}
@@ -128,7 +135,6 @@ export default function App() {
           {loading ? "Connecting..." : "Connect"}
         </Button>
       )}
-
       {connected && (
         <>
           <DeviceStatus
@@ -146,8 +152,7 @@ export default function App() {
           <RemoteControl />
         </>
       )}
-
-      <Toaster />
+      <Toaster /> {/* Toast notifications */}
     </div>
   );
 }
