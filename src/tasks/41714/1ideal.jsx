@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState } from "react";
 
-const GRID_SIZE = 20;
-const CELL_SIZE = 20;
+const GRID_SIZE = 20; // Grid size constant
+const CELL_SIZE = 20; // Cell size constant
 
+// Grid component to render the grid and handle cell interactions
 function Grid({ grid, onCellClick, onCellRightClick, dronePositions }) {
   return (
     <div className="grid gap-0">
@@ -18,10 +19,10 @@ function Grid({ grid, onCellClick, onCellRightClick, dronePositions }) {
               className={`w-4 h-4 md:w-5 md:h-5 border border-gray-200 ${
                 cell ? "bg-blue-500" : "bg-white"
               }`}
-              onClick={() => onCellClick(x, y)}
+              onClick={() => onCellClick(x, y)} // Left-click to toggle cell
               onContextMenu={(e) => {
                 e.preventDefault();
-                onCellRightClick(x, y);
+                onCellRightClick(x, y); // Right-click to clear cell
               }}
             >
               {dronePositions.some(([dx, dy]) => dx === x && dy === y) && (
@@ -35,13 +36,14 @@ function Grid({ grid, onCellClick, onCellRightClick, dronePositions }) {
   );
 }
 
+// CopyButton component to copy text to the clipboard
 function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
   return (
@@ -51,16 +53,18 @@ function CopyButton({ text }) {
   );
 }
 
+// Main App component to handle the drone formation logic and UI
 export default function App() {
   const [grid, setGrid] = useState(
     Array(GRID_SIZE)
       .fill()
-      .map(() => Array(GRID_SIZE).fill(false))
+      .map(() => Array(GRID_SIZE).fill(false)) // Initialize grid state
   );
-  const [droneCount, setDroneCount] = useState(2);
-  const [dronePositions, setDronePositions] = useState([]);
-  const [jsonInput, setJsonInput] = useState("");
+  const [droneCount, setDroneCount] = useState(2); // State for number of drones
+  const [dronePositions, setDronePositions] = useState([]); // State for drone positions
+  const [jsonInput, setJsonInput] = useState(""); // State for JSON input
 
+  // Calculate drone positions based on filled cells
   const calculateDronePositions = () => {
     const filledCells = [];
     grid.forEach((row, y) => {
@@ -80,23 +84,27 @@ export default function App() {
     return positions;
   };
 
+  // Handle cell click to toggle cell state
   const handleCellClick = (x, y) => {
     const newGrid = [...grid];
     newGrid[y][x] = !newGrid[y][x];
     setGrid(newGrid);
   };
 
+  // Handle cell right-click to clear cell state
   const handleCellRightClick = (x, y) => {
     const newGrid = [...grid];
     newGrid[y][x] = false;
     setGrid(newGrid);
   };
 
+  // Handle submit button click to calculate and set drone positions
   const handleSubmit = () => {
     const positions = calculateDronePositions();
     setDronePositions(positions);
   };
 
+  // Handle JSON input submission to set grid and drone positions
   const handleJsonSubmit = () => {
     try {
       const positions = JSON.parse(jsonInput);
