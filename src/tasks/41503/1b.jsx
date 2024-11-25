@@ -1,135 +1,153 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Toast } from "@/components/ui/toast";
 import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/ui/use-toast";
 import React, { useEffect, useState } from "react";
 
-const StatusCard = ({ title, value }) => (
-  <Card className="w-full sm:w-1/2 lg:w-1/4 mb-4 sm:mb-0 sm:mr-4">
-    <CardHeader className="pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+const DeviceStatus = ({ batteryLevel, provider, time }) => (
+  <Card className="mb-4">
+    <CardHeader>
+      <CardTitle>Device Status</CardTitle>
     </CardHeader>
     <CardContent>
-      <p className="text-2xl font-bold">{value}</p>
+      <p>Battery: {batteryLevel}%</p>
+      <p>Provider: {provider}</p>
+      <p>Time: {time}</p>
+    </CardContent>
+  </Card>
+);
+
+const SurveillanceControls = ({
+  onMicToggle,
+  onCameraToggle,
+  micActive,
+  cameraActive,
+}) => (
+  <Card className="mb-4">
+    <CardHeader>
+      <CardTitle>Surveillance Controls</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="flex items-center justify-between mb-2">
+        <span>Microphone</span>
+        <Switch checked={micActive} onCheckedChange={onMicToggle} />
+      </div>
+      <div className="flex items-center justify-between">
+        <span>Camera</span>
+        <Switch checked={cameraActive} onCheckedChange={onCameraToggle} />
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const Preview = ({ micActive, cameraActive }) => (
+  <Card className="mb-4">
+    <CardHeader>
+      <CardTitle>Preview</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {micActive && <p>Microphone active: Audio streaming...</p>}
+      {cameraActive && (
+        <div className="bg-gray-200 h-40 flex items-center justify-center">
+          Camera active: Video feed placeholder
+        </div>
+      )}
+      {!micActive && !cameraActive && <p>No active streams</p>}
     </CardContent>
   </Card>
 );
 
 const RemoteControl = () => (
-  <Card className="mt-6">
+  <Card>
     <CardHeader>
       <CardTitle>Remote Control</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="bg-gray-100 h-40 flex items-center justify-center">
-        <p className="text-gray-500">
-          Remote control functionality coming soon
-        </p>
+        Remote control interface placeholder
       </div>
     </CardContent>
   </Card>
 );
 
 export default function App() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [microphoneOn, setMicrophoneOn] = useState(false);
-  const [cameraOn, setCameraOn] = useState(false);
-  const [batteryLevel, setBatteryLevel] = useState(75);
-  const [provider, setProvider] = useState("Example Telecom");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [micActive, setMicActive] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [batteryLevel, setBatteryLevel] = useState(85);
+  const [provider, setProvider] = useState("Example Network");
+  const [time, setTime] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString());
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
   const handleConnect = () => {
-    setIsConnecting(true);
+    setLoading(true);
     setTimeout(() => {
-      setIsConnected(true);
-      setIsConnecting(false);
-      showToast("Connected successfully!");
+      setConnected(true);
+      setLoading(false);
+      toast({
+        title: "Connected successfully",
+        description: "Your mobile device is now connected.",
+      });
     }, 5000);
   };
 
-  const showToast = (message) => {
-    Toast({
-      title: "Notification",
-      description: message,
+  const handleMicToggle = (checked) => {
+    setMicActive(checked);
+    toast({
+      title: checked ? "Microphone activated" : "Microphone deactivated",
+    });
+  };
+
+  const handleCameraToggle = (checked) => {
+    setCameraActive(checked);
+    toast({
+      title: checked ? "Camera activated" : "Camera deactivated",
     });
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <Toaster />
-      <h1 className="text-3xl font-bold mb-6">Mobile Surveillance Camera</h1>
+    <div className="container mx-auto p-4 max-w-md">
+      <h1 className="text-2xl font-bold mb-4">Mobile Surveillance App</h1>
 
-      <Button
-        onClick={handleConnect}
-        disabled={isConnected || isConnecting}
-        className="mb-6"
-      >
-        {isConnecting ? "Connecting..." : isConnected ? "Connected" : "Connect"}
-      </Button>
+      {!connected && (
+        <Button
+          onClick={handleConnect}
+          disabled={loading}
+          className="w-full mb-4"
+        >
+          {loading ? "Connecting..." : "Connect"}
+        </Button>
+      )}
 
-      {isConnected && (
+      {connected && (
         <>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Surveillance Options</h2>
-            <div className="flex items-center mb-2">
-              <Switch
-                id="microphone"
-                checked={microphoneOn}
-                onCheckedChange={setMicrophoneOn}
-              />
-              <label htmlFor="microphone" className="ml-2">
-                Microphone
-              </label>
-            </div>
-            <div className="flex items-center">
-              <Switch
-                id="camera"
-                checked={cameraOn}
-                onCheckedChange={setCameraOn}
-              />
-              <label htmlFor="camera" className="ml-2">
-                Camera
-              </label>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Device Status</h2>
-            <div className="flex flex-wrap">
-              <StatusCard title="Battery Level" value={`${batteryLevel}%`} />
-              <StatusCard title="Mobile Provider" value={provider} />
-              <StatusCard
-                title="Time"
-                value={currentTime.toLocaleTimeString()}
-              />
-              <StatusCard
-                title="Date"
-                value={currentTime.toLocaleDateString()}
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Battery Level</h2>
-            <Slider
-              value={[batteryLevel]}
-              onValueChange={(value) => setBatteryLevel(value[0])}
-              max={100}
-              step={1}
-            />
-          </div>
-
+          <DeviceStatus
+            batteryLevel={batteryLevel}
+            provider={provider}
+            time={time}
+          />
+          <SurveillanceControls
+            onMicToggle={handleMicToggle}
+            onCameraToggle={handleCameraToggle}
+            micActive={micActive}
+            cameraActive={cameraActive}
+          />
+          <Preview micActive={micActive} cameraActive={cameraActive} />
           <RemoteControl />
         </>
       )}
+
+      <Toaster />
     </div>
   );
 }

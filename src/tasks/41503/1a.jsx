@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -12,92 +13,103 @@ import { ToastProvider, useToast } from "@/components/ui/toast";
 import React, { useEffect, useState } from "react";
 
 function App() {
-  return (
-    <ToastProvider>
-      <SurveillanceApp />
-    </ToastProvider>
-  );
-}
-
-function SurveillanceApp() {
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [micOn, setMicOn] = useState(false);
-  const [cameraOn, setCameraOn] = useState(false);
-  const [batteryLevel, setBatteryLevel] = useState(50);
+  const [micStatus, setMicStatus] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState(false);
+  const [phoneStatus, setPhoneStatus] = useState({
+    battery: 85,
+    provider: "MobileNet",
+    time: new Date().toLocaleTimeString(),
+  });
+
   const { toast } = useToast();
 
-  const handleConnect = async () => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    setLoading(false);
-    setIsConnected(true);
-    toast({
-      title: "Connected",
-      description: "Successfully connected to the mobile device.",
-    });
-  };
-
   useEffect(() => {
-    // Simulate battery level change
-    const interval = setInterval(() => {
-      setBatteryLevel((prev) => (prev > 0 ? prev - 1 : 100));
-    }, 30000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setPhoneStatus((prev) => ({
+        ...prev,
+        time: new Date().toLocaleTimeString(),
+      }));
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
+  const handleConnect = () => {
+    setIsConnecting(true);
+    setTimeout(() => {
+      setIsConnecting(false);
+      setIsConnected(true);
+      toast({
+        title: "Connected Successfully",
+        description: "Your mobile device is now connected.",
+      });
+    }, 5000);
+  };
+
+  const FeatureCard = ({ title, description, status, onToggle }) => (
+    <Card className="mb-4 sm:mb-0">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardFooter>
+        <Switch checked={status} onCheckedChange={onToggle} />
+      </CardFooter>
+    </Card>
+  );
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Mobile Surveillance Control</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!isConnected ? (
-            <Button onClick={handleConnect} disabled={loading}>
-              {loading ? "Connecting..." : "Connect"}
-            </Button>
-          ) : (
-            <>
-              <div className="mb-4">
-                <Switch
-                  id="mic"
-                  checked={micOn}
-                  onCheckedChange={setMicOn}
-                  className="mr-2"
-                />
-                <label htmlFor="mic">Microphone</label>
-              </div>
-              <div>
-                <Switch
-                  id="cam"
-                  checked={cameraOn}
-                  onCheckedChange={setCameraOn}
-                  className="mr-2"
-                />
-                <label htmlFor="cam">Camera & Microphone</label>
-              </div>
-              <div className="mt-4">
-                <h3 className="text-sm font-medium">Device Status</h3>
-                <Progress value={batteryLevel} className="mt-2" />
-                <p className="mt-2 text-xs">Battery: {batteryLevel}%</p>
-                <p className="text-xs">Provider: MobileNet</p>
-                <p className="text-xs">
-                  Time: {new Date().toLocaleTimeString()}
-                </p>
-              </div>
-            </>
-          )}
-        </CardContent>
-        <CardFooter>
-          <div className="border border-dashed border-gray-300 p-4">
-            <p className="text-center text-gray-500">
-              Remote Control Interface (To be implemented)
-            </p>
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
+    <ToastProvider>
+      <div className="min-h-screen bg-gray-100 p-4 flex flex-col items-center">
+        <h1 className="text-2xl font-bold mb-6">Mobile Surveillance Manager</h1>
+
+        {!isConnected ? (
+          <Button onClick={handleConnect} disabled={isConnecting}>
+            {isConnecting ? <Progress className="w-4 h-4 mr-2" /> : "Connect"}
+          </Button>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+              <FeatureCard
+                title="Microphone"
+                description="Activate the microphone"
+                status={micStatus}
+                onToggle={setMicStatus}
+              />
+              <FeatureCard
+                title="Camera & Microphone"
+                description="Activate both camera and microphone"
+                status={cameraStatus}
+                onToggle={setCameraStatus}
+              />
+            </div>
+
+            <Card className="mt-6 w-full max-w-lg">
+              <CardHeader>
+                <CardTitle>Phone Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Battery: {phoneStatus.battery}%</p>
+                <p>Provider: {phoneStatus.provider}</p>
+                <p>Time: {phoneStatus.time}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6 w-full max-w-lg">
+              <CardHeader>
+                <CardTitle>Remote Control</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-40 bg-gray-200 flex items-center justify-center">
+                  <p>Remote control interface will be implemented here.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
+    </ToastProvider>
   );
 }
 
