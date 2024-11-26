@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Toaster } from "@/components/ui/toaster";
 import React, { useState } from "react";
 
 // Component for a group of radio buttons with an optional text input field
@@ -105,7 +104,6 @@ export default function App() {
           <ComplicatedRadioButton />
         </CardContent>
       </Card>
-      <Toaster /> {/* Toast notifications */}
     </div>
   );
 }
