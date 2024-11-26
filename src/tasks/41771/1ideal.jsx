@@ -11,15 +11,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
-const CELL_SIZE = 50;
+const CELL_SIZE = 50; // Size of each grid cell
 
 const FurniturePiece = ({ piece, isActive, onClick, onOutsideClick }) => {
-  const ref = useRef();
+  const ref = useRef(); // Reference to the furniture piece element
   const style = {
-    width: piece.width * CELL_SIZE,
-    height: piece.height * CELL_SIZE,
-    transform: `rotate(${piece.rotation}deg)`,
-    backgroundColor: isActive ? "bg-blue-500" : "bg-slate-300",
+    width: piece.width * CELL_SIZE, // Calculate width in pixels
+    height: piece.height * CELL_SIZE, // Calculate height in pixels
+    transform: `rotate(${piece.rotation}deg)`, // Apply rotation
+    backgroundColor: isActive ? "bg-blue-500" : "bg-slate-300", // Conditional background color
     position: "absolute",
     left: piece.x * CELL_SIZE,
     top: piece.y * CELL_SIZE,
@@ -28,16 +28,14 @@ const FurniturePiece = ({ piece, isActive, onClick, onOutsideClick }) => {
   };
 
   useEffect(() => {
+    // Handle clicks outside the furniture piece
     function handleClickOutside(event) {
       if (ref.current && !ref.current.contains(event.target)) {
         onOutsideClick && onOutsideClick();
-        // Call the outside click handler
       }
     }
-    // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [onOutsideClick]);
@@ -99,16 +97,17 @@ const Grid = ({ width, height, furniture, activePiece, setActivePiece }) => {
 };
 
 export default function App() {
-  const [roomWidth, setRoomWidth] = useState(10);
-  const [roomHeight, setRoomHeight] = useState(10);
-  const [furniture, setFurniture] = useState([]);
-  const [activePiece, setActivePiece] = useState(null);
-  const [newPieceLabel, setNewPieceLabel] = useState("");
-  const [newPieceWidth, setNewPieceWidth] = useState(1);
-  const [newPieceHeight, setNewPieceHeight] = useState(1);
+  const [roomWidth, setRoomWidth] = useState(10); // Room width state
+  const [roomHeight, setRoomHeight] = useState(10); // Room height state
+  const [furniture, setFurniture] = useState([]); // Furniture pieces state
+  const [activePiece, setActivePiece] = useState(null); // Active furniture piece state
+  const [newPieceLabel, setNewPieceLabel] = useState(""); // New furniture piece label state
+  const [newPieceWidth, setNewPieceWidth] = useState(1); // New furniture piece width state
+  const [newPieceHeight, setNewPieceHeight] = useState(1); // New furniture piece height state
   const { toast } = useToast(); // Hook for displaying toast notifications
 
   const addFurniture = () => {
+    // Add new furniture piece
     if (newPieceLabel && newPieceWidth > 0 && newPieceHeight > 0) {
       setFurniture([
         ...furniture,
@@ -128,7 +127,7 @@ export default function App() {
       toast({
         title: "Add Furniture",
         description:
-          "Please make sure to add dimentions and a label for the furniture piece.",
+          "Please make sure to add dimensions and a label for the furniture piece.",
       });
     }
   };
@@ -159,6 +158,8 @@ export default function App() {
           }
           return false; // No overlap found
         }
+
+        // Move the active piece
         const newPositionFurniture = furniture.map((piece, index) =>
           index === activePiece
             ? {
@@ -171,6 +172,8 @@ export default function App() {
               }
             : piece
         );
+
+        // Check for overlaps
         const isOverlapping = hasOverlap(newPositionFurniture);
         if (!isOverlapping) {
           setFurniture(newPositionFurniture);
@@ -181,13 +184,13 @@ export default function App() {
   );
 
   const rotateFurniture = useCallback(() => {
+    // Rotate the active piece
     if (activePiece !== null) {
       setFurniture(
         furniture.map((piece, index) =>
           index === activePiece
             ? {
                 ...piece,
-                // rotation: (piece.rotation + 90) % 360,
                 width: piece.height,
                 height: piece.width,
               }
@@ -199,6 +202,7 @@ export default function App() {
 
   const handleKeyDown = useCallback(
     (e) => {
+      // Handle key presses for moving and rotating furniture
       switch (e.key) {
         case "ArrowLeft":
           moveFurniture(-1, 0);
@@ -223,25 +227,25 @@ export default function App() {
   );
 
   useEffect(() => {
+    // Add event listener for key presses
     window.addEventListener("keydown", handleKeyDown);
     return () => {
+      // Remove event listener on cleanup
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleKeyDown]);
 
-  console.log("🚀 ~ useEffect ~ activePiece:", activePiece);
   useEffect(() => {
+    // Scroll to the grid and disable scrolling when a piece is active
     if (activePiece !== null) {
-      // Disable scroll
       document.body.style.overflow = "hidden";
       const gridElement = document.getElementById("grid");
       if (gridElement) {
         gridElement.scrollIntoView({ behavior: "smooth" });
       }
     } else {
-      // Enable scroll
       document.body.style.overflow = "auto";
-    } // Cleanup to re-enable scroll when the component unmounts or activePiece changes
+    }
     return () => {
       document.body.style.overflow = "auto";
     };
