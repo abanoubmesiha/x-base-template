@@ -1,17 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tooltip } from "@/components/ui/tooltip";
-import React, { useCallback, useEffect, useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 const CELL_SIZE = 50;
 
-const FurniturePiece = ({ piece, isActive, onClick }) => {
+const FurniturePiece = ({ piece, isActive, onClick, onOutsideClick }) => {
+  const ref = useRef();
   const style = {
     width: piece.width * CELL_SIZE,
     height: piece.height * CELL_SIZE,
     transform: `rotate(${piece.rotation}deg)`,
-    backgroundColor: isActive ? "bg-blue-500" : "bg-gray-300",
+    backgroundColor: isActive ? "bg-blue-500" : "bg-slate-300",
     position: "absolute",
     left: piece.x * CELL_SIZE,
     top: piece.y * CELL_SIZE,
@@ -19,14 +27,37 @@ const FurniturePiece = ({ piece, isActive, onClick }) => {
     cursor: "pointer",
   };
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        onOutsideClick && onOutsideClick();
+        // Call the outside click handler
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onOutsideClick]);
+
   return (
-    <Tooltip content={piece.label}>
-      <div
-        className={`${style.backgroundColor} hover:bg-blue-300`}
-        style={style}
-        onClick={onClick}
-      />
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div
+            ref={ref}
+            className={`${style.backgroundColor} hover:bg-blue-300`}
+            style={style}
+            onClick={onClick}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{piece.label}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
@@ -35,13 +66,13 @@ const Grid = ({ width, height, furniture, activePiece, setActivePiece }) => {
     display: "grid",
     gridTemplateColumns: `repeat(${width}, ${CELL_SIZE}px)`,
     gridTemplateRows: `repeat(${height}, ${CELL_SIZE}px)`,
-    gap: "1px",
-    backgroundColor: "bg-gray-200",
+    gap: "0px",
     position: "relative",
   };
 
   return (
     <div
+      id="grid"
       className="overflow-auto p-4"
       style={{ maxWidth: "100vw", maxHeight: "70vh" }}
     >
@@ -49,7 +80,7 @@ const Grid = ({ width, height, furniture, activePiece, setActivePiece }) => {
         {Array.from({ length: width * height }).map((_, index) => (
           <div
             key={index}
-            className="bg-white"
+            className="bg-gray-200"
             style={{ width: CELL_SIZE, height: CELL_SIZE }}
           />
         ))}
@@ -59,6 +90,7 @@ const Grid = ({ width, height, furniture, activePiece, setActivePiece }) => {
             piece={piece}
             isActive={activePiece === index}
             onClick={() => setActivePiece(index)}
+            onOutsideClick={() => setActivePiece(null)}
           />
         ))}
       </div>
@@ -74,6 +106,7 @@ export default function App() {
   const [newPieceLabel, setNewPieceLabel] = useState("");
   const [newPieceWidth, setNewPieceWidth] = useState(1);
   const [newPieceHeight, setNewPieceHeight] = useState(1);
+  const { toast } = useToast(); // Hook for displaying toast notifications
 
   const addFurniture = () => {
     if (newPieceLabel && newPieceWidth > 0 && newPieceHeight > 0) {
@@ -91,29 +124,57 @@ export default function App() {
       setNewPieceLabel("");
       setNewPieceWidth(1);
       setNewPieceHeight(1);
+    } else {
+      toast({
+        title: "Add Furniture",
+        description:
+          "Please make sure to add dimentions and a label for the furniture piece.",
+      });
     }
   };
 
   const moveFurniture = useCallback(
     (dx, dy) => {
       if (activePiece !== null) {
-        setFurniture(
-          furniture.map((piece, index) =>
-            index === activePiece
-              ? {
-                  ...piece,
-                  x: Math.max(
-                    0,
-                    Math.min(roomWidth - piece.width, piece.x + dx)
-                  ),
-                  y: Math.max(
-                    0,
-                    Math.min(roomHeight - piece.height, piece.y + dy)
-                  ),
-                }
-              : piece
-          )
+        // Function to check if two rectangles overlap
+        function doRectanglesOverlap(rect1, rect2) {
+          return !(
+            (
+              rect1.x + rect1.width <= rect2.x || // rect1 is to the left of rect2
+              rect1.x >= rect2.x + rect2.width || // rect1 is to the right of rect2
+              rect1.y + rect1.height <= rect2.y || // rect1 is above rect2
+              rect1.y >= rect2.y + rect2.height
+            ) // rect1 is below rect2
+          );
+        }
+
+        // Function to check if there is any overlap in an array of furniture pieces
+        function hasOverlap(furniturePieces) {
+          for (let i = 0; i < furniturePieces.length; i++) {
+            for (let j = i + 1; j < furniturePieces.length; j++) {
+              if (doRectanglesOverlap(furniturePieces[i], furniturePieces[j])) {
+                return true; // There is an overlap
+              }
+            }
+          }
+          return false; // No overlap found
+        }
+        const newPositionFurniture = furniture.map((piece, index) =>
+          index === activePiece
+            ? {
+                ...piece,
+                x: Math.max(0, Math.min(roomWidth - piece.width, piece.x + dx)),
+                y: Math.max(
+                  0,
+                  Math.min(roomHeight - piece.height, piece.y + dy)
+                ),
+              }
+            : piece
         );
+        const isOverlapping = hasOverlap(newPositionFurniture);
+        if (!isOverlapping) {
+          setFurniture(newPositionFurniture);
+        }
       }
     },
     [activePiece, furniture, roomWidth, roomHeight]
@@ -126,7 +187,7 @@ export default function App() {
           index === activePiece
             ? {
                 ...piece,
-                rotation: (piece.rotation + 90) % 360,
+                // rotation: (piece.rotation + 90) % 360,
                 width: piece.height,
                 height: piece.width,
               }
@@ -168,6 +229,24 @@ export default function App() {
     };
   }, [handleKeyDown]);
 
+  console.log("🚀 ~ useEffect ~ activePiece:", activePiece);
+  useEffect(() => {
+    if (activePiece !== null) {
+      // Disable scroll
+      document.body.style.overflow = "hidden";
+      const gridElement = document.getElementById("grid");
+      if (gridElement) {
+        gridElement.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // Enable scroll
+      document.body.style.overflow = "auto";
+    } // Cleanup to re-enable scroll when the component unmounts or activePiece changes
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [activePiece]);
+
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <Card className="mb-4">
@@ -189,7 +268,6 @@ export default function App() {
           />
         </CardContent>
       </Card>
-
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>Add Furniture</CardTitle>
@@ -215,7 +293,6 @@ export default function App() {
           <Button onClick={addFurniture}>Add</Button>
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>Room Layout</CardTitle>
@@ -234,6 +311,7 @@ export default function App() {
           </p>
         </CardContent>
       </Card>
+      <Toaster /> {/* Toast notifications */}
     </div>
   );
 }
