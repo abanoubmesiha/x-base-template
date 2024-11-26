@@ -1,104 +1,108 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useEffect, useRef, useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import React, { useState } from "react";
 
-const ClockHand = ({ angle, length, width, color }) => {
+const RadioButtonGroup = ({
+  label,
+  options,
+  selectedOption,
+  onOptionChange,
+  showInput,
+}) => {
   return (
-    <div
-      style={{
-        width: `${width}px`,
-        height: `${length}px`,
-        backgroundColor: color,
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: `translate(-50%, -100%) rotate(${angle}deg)`,
-        transformOrigin: "50% 100%",
-        borderRadius: "5px",
-      }}
-    />
+    <div>
+      <p>{label}</p>
+      <div className="flex flex-col">
+        {options.map((option, index) => (
+          <label key={index} className="inline-flex items-center mt-2">
+            <input
+              type="radio"
+              name={label}
+              value={option}
+              checked={selectedOption === option}
+              onChange={() => onOptionChange(option)}
+              className="mr-2"
+            />
+            {option}
+            {option === showInput && (
+              <input
+                type="text"
+                placeholder="Other"
+                className="ml-2 border border-gray-300 p-1 rounded"
+              />
+            )}
+          </label>
+        ))}
+      </div>
+    </div>
   );
 };
 
-const ClockFace = ({ hours, minutes, seconds, isFlipped, onAdjust }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const intervalId = useRef(null);
+const ComplicatedRadioButton = () => {
+  const [selectedOption, setSelectedOption] = useState("");
+  const [nestedOption, setNestedOption] = useState("");
 
-  useEffect(() => {
-    intervalId.current = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(intervalId.current);
-  }, []);
-
-  const adjustTime = (unit, amount) => {
-    const newTime = new Date(currentTime);
-    if (unit === "hours") newTime.setHours(newTime.getHours() + amount);
-    else if (unit === "minutes")
-      newTime.setMinutes(newTime.getMinutes() + amount);
-    setCurrentTime(newTime);
-    onAdjust(newTime);
+  const handleOptionChange = (option) => {
+    setSelectedOption(option);
+    setNestedOption("");
   };
 
-  const hour =
-    ((currentTime.getHours() % 12) + currentTime.getMinutes() / 60) * 30;
-  const minute = currentTime.getMinutes() * 6;
-  const second = currentTime.getSeconds() * 6;
+  const handleNestedOptionChange = (option) => {
+    setNestedOption(option);
+  };
 
   return (
-    <div
-      className={`relative w-full h-full transition-transform ${
-        isFlipped ? "rotate-y-180" : ""
-      }`}
-    >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-48 h-48 sm:w-64 sm:h-64 border-4 border-black rounded-full relative bg-white shadow-lg">
-          <ClockHand angle={hour} length={60} width={6} color="black" />
-          <ClockHand angle={minute} length={80} width={4} color="black" />
-          <ClockHand angle={second} length={90} width={2} color="red" />
-          <div className="w-4 h-4 bg-black rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-        </div>
-      </div>
-      {isFlipped && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center rotate-y-180">
-          <div className="mb-4">
-            <Button onClick={() => adjustTime("hours", 1)}>Adjust Hour</Button>
-            <Button onClick={() => adjustTime("minutes", 1)}>
-              Adjust Minute
-            </Button>
-          </div>
-        </div>
+    <div className="flex flex-col gap-4">
+      <RadioButtonGroup
+        label="I am a complicated radio button"
+        options={["Option A", "Option B", "Option C", "Option D"]}
+        selectedOption={selectedOption}
+        onOptionChange={handleOptionChange}
+        showInput={selectedOption === "Option D" ? "Option D" : ""}
+      />
+      {selectedOption === "Option A" && (
+        <RadioButtonGroup
+          label="I am a A complicated radio button"
+          options={["Option AA", "Option AB", "Option AC", "Option AD"]}
+          selectedOption={nestedOption}
+          onOptionChange={handleNestedOptionChange}
+          showInput={nestedOption === "Option AD" ? "Option AD" : ""}
+        />
+      )}
+      {selectedOption === "Option B" && (
+        <RadioButtonGroup
+          label="I am a B complicated radio button"
+          options={["Option BA", "Option BB", "Option BC", "Option BD"]}
+          selectedOption={nestedOption}
+          onOptionChange={handleNestedOptionChange}
+          showInput={nestedOption === "Option BD" ? "Option BD" : ""}
+        />
+      )}
+      {selectedOption === "Option C" && (
+        <RadioButtonGroup
+          label="I am a C complicated radio button"
+          options={["Option CA", "Option CB", "Option CC", "Option CD"]}
+          selectedOption={nestedOption}
+          onOptionChange={handleNestedOptionChange}
+          showInput={nestedOption === "Option CD" ? "Option CD" : ""}
+        />
       )}
     </div>
   );
 };
 
 export default function App() {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [adjustedTime, setAdjustedTime] = useState(null);
-
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-sm p-4">
+    <div className="container mx-auto p-4 sm:max-w-md">
+      <Card>
         <CardHeader>
-          <CardTitle>Analog Clock</CardTitle>
+          <CardTitle>Complicated Radio Button</CardTitle>
         </CardHeader>
-        <CardContent className="p-4">
-          <div
-            onClick={() => setIsFlipped(!isFlipped)}
-            className="cursor-pointer"
-          >
-            <ClockFace
-              hours={adjustedTime?.getHours() || new Date().getHours()}
-              minutes={adjustedTime?.getMinutes() || new Date().getMinutes()}
-              seconds={adjustedTime?.getSeconds() || new Date().getSeconds()}
-              isFlipped={isFlipped}
-              onAdjust={setAdjustedTime}
-            />
-          </div>
+        <CardContent>
+          <ComplicatedRadioButton />
         </CardContent>
       </Card>
+      <Toaster />
     </div>
   );
 }
