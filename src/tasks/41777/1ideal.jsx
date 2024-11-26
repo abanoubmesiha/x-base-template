@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/toaster";
 import React, { useState } from "react";
 
+// Component for a group of radio buttons with an optional text input field
 const RadioButtonGroup = ({
   label,
   options,
@@ -38,17 +39,18 @@ const RadioButtonGroup = ({
   );
 };
 
+// Component that manages the state and renders the complex radio button logic
 const ComplicatedRadioButton = () => {
-  const [selectedOption, setSelectedOption] = useState("");
-  const [nestedOption, setNestedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState(""); // State for the main radio button selection
+  const [nestedOption, setNestedOption] = useState(""); // State for the nested radio button selection
 
   const handleOptionChange = (option) => {
-    setSelectedOption(option);
-    setNestedOption("");
+    setSelectedOption(option); // Update the main radio button selection
+    setNestedOption(""); // Reset the nested selection when main selection changes
   };
 
   const handleNestedOptionChange = (option) => {
-    setNestedOption(option);
+    setNestedOption(option); // Update the nested radio button selection
   };
 
   return (
@@ -91,6 +93,7 @@ const ComplicatedRadioButton = () => {
   );
 };
 
+// Main application component
 export default function App() {
   return (
     <div className="container mx-auto p-4 sm:max-w-md">
@@ -102,7 +105,7 @@ export default function App() {
           <ComplicatedRadioButton />
         </CardContent>
       </Card>
-      <Toaster />
+      <Toaster /> {/* Toast notifications */}
     </div>
   );
 }
