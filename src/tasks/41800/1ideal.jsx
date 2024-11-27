@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useState } from "react";
 
+// Component for formatted money input field
 const MoneyField = ({ label, value, onChange }) => {
   const formatValue = (val) => {
     // Remove non-numeric characters except decimal point
@@ -29,6 +30,7 @@ const MoneyField = ({ label, value, onChange }) => {
       : formattedInteger;
   };
 
+  // Handle input changes and format value
   const handleChange = (e) => {
     const rawValue = e.target.value.replace(/[$,]/g, "");
     if (!isNaN(parseFloat(rawValue)) || rawValue === "") {
@@ -51,9 +53,10 @@ const MoneyField = ({ label, value, onChange }) => {
   );
 };
 
+// Form component to demonstrate MoneyField usage
 const ExampleForm = () => {
-  const [amount, setAmount] = useState("");
-  const [salary, setSalary] = useState("");
+  const [amount, setAmount] = useState(""); // State for transaction amount
+  const [salary, setSalary] = useState(""); // State for annual salary
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -72,6 +75,7 @@ const ExampleForm = () => {
   );
 };
 
+// Main application component
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
