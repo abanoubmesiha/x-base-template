@@ -1,34 +1,81 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import React, { useState } from "react";
 
-const FruitSelector = () => {
-  const [selectedFruit, setSelectedFruit] = useState('');
+const MoneyField = ({ label, value, onChange }) => {
+  const formatValue = (val) => {
+    // Remove non-numeric characters except decimal point
+    let numericValue = val.replace(/[^0-9.]/g, "");
+
+    // Ensure only one decimal point
+    const parts = numericValue.split(".");
+    if (parts.length > 2) {
+      numericValue = parts[0] + "." + parts.slice(1).join("");
+    }
+
+    // Limit to 2 decimal places
+    const decimalIndex = numericValue.indexOf(".");
+    if (decimalIndex !== -1) {
+      numericValue = numericValue.slice(0, decimalIndex + 3);
+    }
+
+    // Add commas for thousands
+    const [integerPart, decimalPart] = numericValue.split(".");
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    return decimalPart
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
+  };
+
+  const handleChange = (e) => {
+    const rawValue = e.target.value.replace(/[$,]/g, "");
+    if (!isNaN(parseFloat(rawValue)) || rawValue === "") {
+      onChange(formatValue(rawValue));
+    }
+  };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Fruit Selector 1ideal</CardTitle>
-          <CardDescription>Choose your favorite fruit from the options below.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Selected fruit: {selectedFruit || 'no selection'}</p>
-          <Select onValueChange={(value) => setSelectedFruit(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a fruit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Apple">Apple</SelectItem>
-              <SelectItem value="Banana">Banana</SelectItem>
-              <SelectItem value="Strawberry">Strawberry</SelectItem>
-              <SelectItem value="test">test</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+    <div className="relative">
+      <Label htmlFor={label}>{label}</Label>
+      <Input
+        id={label}
+        type="text"
+        value={value === "" ? "" : `$${value}`}
+        onChange={handleChange}
+        className="pl-6"
+      />
+      <span className="absolute left-2 top-8 text-gray-500">$</span>
     </div>
   );
 };
 
-export default FruitSelector;
+const ExampleForm = () => {
+  const [amount, setAmount] = useState("");
+  const [salary, setSalary] = useState("");
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Financial Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <MoneyField
+          label="Transaction Amount"
+          value={amount}
+          onChange={setAmount}
+        />
+        <MoneyField label="Annual Salary" value={salary} onChange={setSalary} />
+      </CardContent>
+    </Card>
+  );
+};
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <ExampleForm />
+    </div>
+  );
+}
