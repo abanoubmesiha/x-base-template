@@ -1,10 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React, { useCallback, useState } from "react";
 
-const StepperItem = ({ step, level = 0, activePath, onStepClick }) => {
-  const isActive = activePath.slice(0, level + 1).join(".") === step.id;
-  const isPassed = activePath.slice(0, level + 1).join(".") > step.id;
-
+const StepperItem = ({ step, level = 0, onStepClick }) => {
   const handleClick = useCallback(() => {
     onStepClick(step.id.split("."));
   }, [step.id, onStepClick]);
@@ -15,9 +12,9 @@ const StepperItem = ({ step, level = 0, activePath, onStepClick }) => {
         onClick={handleClick}
         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
           ${
-            isActive
+            step.isActive
               ? "bg-blue-500 text-white"
-              : isPassed
+              : step.isPassed
               ? "bg-green-500 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
@@ -31,7 +28,6 @@ const StepperItem = ({ step, level = 0, activePath, onStepClick }) => {
               key={childStep.id}
               step={childStep}
               level={level + 1}
-              activePath={activePath}
               onStepClick={onStepClick}
             />
           ))}
@@ -41,129 +37,143 @@ const StepperItem = ({ step, level = 0, activePath, onStepClick }) => {
   );
 };
 
-const Stepper = ({ steps, activePath, onStepClick }) => {
+const Stepper = ({ steps, onStepClick }) => {
   return (
     <div className="flex flex-wrap justify-center gap-4 p-4 overflow-x-auto">
       {steps.map((step) => (
-        <StepperItem
-          key={step.id}
-          step={step}
-          activePath={activePath}
-          onStepClick={onStepClick}
-        />
+        <StepperItem key={step.id} step={step} onStepClick={onStepClick} />
       ))}
     </div>
   );
 };
 
-const findDeepestStep = (steps, path) => {
-  let currentStep = steps.find((s) => s.id === path[0]);
-  for (let i = 1; i < path.length; i++) {
-    if (!currentStep.children) break;
-    currentStep = currentStep.children.find(
-      (s) => s.id === path.slice(0, i + 1).join(".")
-    );
+function findAndUpdateNextStep(
+  steps,
+  activeFound = false,
+  parentActive = false
+) {
+  for (const step of steps) {
+    if (activeFound) {
+      step.isActive = true;
+      return true;
+    }
+
+    if (step.isActive) {
+      step.isActive = false;
+      activeFound = true;
+    }
+
+    if (step.children) {
+      const nextStepFound = findAndUpdateNextStep(
+        step.children,
+        activeFound,
+        step.isActive
+      );
+      step.isActive = step.isActive || nextStepFound || parentActive;
+      if (nextStepFound) {
+        return true;
+      }
+    }
   }
-  return currentStep;
-};
+  return activeFound;
+}
 
-const findNextStep = (steps, currentPath) => {
-  const flattenSteps = (steps, prefix = "") => {
-    return steps.flatMap((step) => [
-      { ...step, id: prefix + step.id },
-      ...(step.children ? flattenSteps(step.children, step.id + ".") : []),
-    ]);
-  };
+function findActiveStep(steps) {
+  for (const step of steps) {
+    // Check if the current step is active
+    if (step.isActive) {
+      return step;
+    }
 
-  const allSteps = flattenSteps(steps);
-  const currentIndex = allSteps.findIndex(
-    (s) => s.id === currentPath.join(".")
-  );
-  return currentIndex < allSteps.length - 1
-    ? allSteps[currentIndex + 1].id.split(".")
-    : null;
-};
+    // If the step has children, recurse through them
+    if (step.children) {
+      const activeChild = findActiveStep(step.children);
+      if (activeChild) {
+        return activeChild;
+      }
+    }
+  }
+  return null;
+}
 
-const findPreviousStep = (steps, currentPath) => {
-  const flattenSteps = (steps, prefix = "") => {
-    return steps.flatMap((step) => [
-      { ...step, id: prefix + step.id },
-      ...(step.children ? flattenSteps(step.children, step.id + ".") : []),
-    ]);
-  };
+function findPreviousStep(steps, parent = null) {
+  for (const step of steps) {
+    // Check if the current step is active
+    if (step.isActive && parent) {
+      // Find the index of the current step within its parent's children
+      const currentIndex = parent.children.findIndex(
+        (child) => child.id === step.id
+      );
 
-  const allSteps = flattenSteps(steps);
-  const currentIndex = allSteps.findIndex(
-    (s) => s.id === currentPath.join(".")
-  );
-  return currentIndex > 0 ? allSteps[currentIndex - 1].id.split(".") : null;
-};
+      // Return the previous step if it exists
+      if (currentIndex > 0) {
+        return parent.children[currentIndex - 1];
+      }
+    }
+
+    // If the step has children, recurse through them
+    if (step.children) {
+      const previousStep = findPreviousStep(step.children, step);
+      if (previousStep) {
+        return previousStep;
+      }
+    }
+  }
+  return null;
+}
 
 export default function App() {
-  const steps = [
+  const [steps, setSteps] = useState([
     {
       id: "1",
       name: "Getting Information",
       children: [
-        { id: "1.1", name: "Personal" },
-        { id: "1.2", name: "Family" },
+        { id: "1.1", name: "Personal", isActive: false, isPassed: false },
+        { id: "1.2", name: "Family", isActive: false, isPassed: false },
       ],
+      isActive: true,
+      isPassed: false,
     },
     {
       id: "2",
       name: "Sign Docs",
       children: [
-        { id: "2.1", name: "Waiver" },
+        { id: "2.1", name: "Waiver", isActive: false, isPassed: false },
         {
           id: "2.2",
           name: "Ownership",
           children: [
-            { id: "2.2.1", name: "Car" },
-            { id: "2.2.2", name: "House" },
+            { id: "2.2.1", name: "Car", isActive: false, isPassed: false },
+            { id: "2.2.2", name: "House", isActive: false, isPassed: false },
           ],
+          isActive: false,
+          isPassed: false,
         },
       ],
     },
-    { id: "3", name: "Final Review" },
-  ];
-
-  const [activePath, setActivePath] = useState(["1"]);
-
-  const handleStepClick = useCallback((path) => {
-    setActivePath(path);
-  }, []);
+    { id: "3", name: "Final Review", isActive: false, isPassed: false },
+  ]);
 
   const handleNext = useCallback(() => {
-    const nextStep = findNextStep(steps, activePath);
-    if (nextStep) setActivePath(nextStep);
-  }, [steps, activePath]);
+    const updatedSteps = [...steps];
+    findAndUpdateNextStep(updatedSteps);
+    setSteps(updatedSteps);
+  }, [steps]);
 
   const handlePrevious = useCallback(() => {
-    const previousStep = findPreviousStep(steps, activePath);
-    if (previousStep) setActivePath(previousStep);
-  }, [steps, activePath]);
-
-  const activeStep = findDeepestStep(steps, activePath);
+    console.log("🚀 ~ handlePrevious ~ handlePrevious:", handlePrevious);
+  }, [steps]);
 
   return (
     <div className="container mx-auto p-4">
-      <Stepper
-        steps={steps}
-        activePath={activePath}
-        onStepClick={handleStepClick}
-      />
+      <Stepper steps={steps} onStepClick={console.log} />
       <div className="mt-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">
-          Current Step: {activeStep.name}
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">Current Step:</h2>
         <div className="flex justify-center gap-4">
-          <Button
-            onClick={handlePrevious}
-            disabled={activePath.join(".") === "1"}
-          >
+          <Button onClick={handlePrevious} disabled={false}>
             Previous
           </Button>
-          <Button onClick={handleNext} disabled={activePath.join(".") === "3"}>
+          <Button onClick={handleNext} disabled={false}>
             Next
           </Button>
         </div>

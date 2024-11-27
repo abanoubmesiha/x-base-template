@@ -2,107 +2,155 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useState } from "react";
 
-const Stepper = ({ steps }) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState([0]);
+const Stepper = ({ steps, isHorizontal, onStepChange }) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [activeSubStep, setActiveSubStep] = useState(0);
 
   const handleNext = () => {
-    const currentDepth = currentStepIndex.length - 1;
-    if (
-      currentStepIndex[currentDepth] + 1 <
-      steps[currentStepIndex[0]].subSteps.length
-    ) {
-      setCurrentStepIndex([
-        ...currentStepIndex,
-        currentStepIndex[currentDepth] + 1,
-      ]);
-    } else if (currentStepIndex[0] + 1 < steps.length) {
-      setCurrentStepIndex([currentStepIndex[0] + 1]);
+    if (activeSubStep < steps[activeStep].subSteps.length - 1) {
+      setActiveSubStep(activeSubStep + 1);
+    } else if (activeStep < steps.length - 1) {
+      setActiveStep(activeStep + 1);
+      setActiveSubStep(0);
     }
+    onStepChange(activeStep, activeSubStep);
   };
 
   const handlePrevious = () => {
-    if (currentStepIndex.length > 1) {
-      setCurrentStepIndex(currentStepIndex.slice(0, -1));
-    } else if (currentStepIndex[0] > 0) {
-      setCurrentStepIndex([currentStepIndex[0] - 1]);
+    if (activeSubStep > 0) {
+      setActiveSubStep(activeSubStep - 1);
+    } else if (activeStep > 0) {
+      setActiveStep(activeStep - 1);
+      setActiveSubStep(steps[activeStep - 1].subSteps.length - 1);
     }
+    onStepChange(activeStep, activeSubStep);
   };
 
-  const isActive = (step, indexes) => {
-    return indexes.join(".") === currentStepIndex.join(".");
-  };
-
-  const hasPassed = (indexes) => {
-    return indexes.join(".") < currentStepIndex.join(".");
-  };
-
-  const renderSteps = (steps, depth = 0, parentIndexes = []) => {
-    return steps.map((step, index) => {
-      const indexes = [...parentIndexes, index];
-      const paddingLeft = `${depth * 4}rem`;
-      return (
-        <div key={index} style={{ paddingLeft }}>
-          <div
-            className={`flex items-center ${
-              isActive(step, indexes) ? "font-bold" : ""
-            } ${hasPassed(indexes) ? "text-green-500" : ""}`}
-          >
-            <div className="w-6 h-6 mr-2 rounded-full flex items-center justify-center bg-gray-200">
-              {hasPassed(indexes) ? "✓" : index + 1}
-            </div>
-            <span>{step.name}</span>
-          </div>
-          {step.subSteps && renderSteps(step.subSteps, depth + 1, indexes)}
-        </div>
-      );
-    });
+  const handleStepClick = (stepIndex, subStepIndex) => {
+    setActiveStep(stepIndex);
+    setActiveSubStep(subStepIndex);
+    onStepChange(stepIndex, subStepIndex);
   };
 
   return (
-    <Card>
+    <div className={`flex ${isHorizontal ? "flex-row" : "flex-col"} gap-4`}>
+      {steps.map((step, stepIndex) => (
+        <div
+          key={stepIndex}
+          className={`flex ${
+            isHorizontal ? "flex-col" : "flex-row"
+          } items-center gap-2`}
+        >
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${
+              stepIndex <= activeStep
+                ? "bg-blue-500 text-white"
+                : "bg-gray-300 text-gray-600"
+            }`}
+            onClick={() => handleStepClick(stepIndex, 0)}
+          >
+            {stepIndex + 1}
+          </div>
+          <div className="text-sm font-medium">{step.name}</div>
+          <div
+            className={`flex ${
+              isHorizontal ? "flex-row" : "flex-col"
+            } gap-2 ml-4`}
+          >
+            {step.subSteps.map((subStep, subStepIndex) => (
+              <div
+                key={subStepIndex}
+                className={`text-xs cursor-pointer ${
+                  stepIndex === activeStep && subStepIndex <= activeSubStep
+                    ? "text-blue-500 font-bold"
+                    : "text-gray-500"
+                }`}
+                onClick={() => handleStepClick(stepIndex, subStepIndex)}
+              >
+                {subStep.name}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const StepContent = ({ step, subStep }) => {
+  const randomText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. ${step.name} - ${subStep.name}`;
+  const randomDescription = `Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ${step.name} - ${subStep.name}`;
+
+  return (
+    <Card className="mt-4">
       <CardHeader>
-        <CardTitle>Stepper</CardTitle>
+        <CardTitle>{`${step.name} - ${subStep.name}`}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col space-y-4">{renderSteps(steps)}</div>
-        <div className="mt-4 flex justify-between">
-          <Button
-            onClick={handlePrevious}
-            disabled={
-              currentStepIndex.length === 1 && currentStepIndex[0] === 0
-            }
-          >
-            Previous
-          </Button>
-          <Button onClick={handleNext}>Next</Button>
-        </div>
+        <p>{randomText}</p>
+        <p className="mt-2 text-sm text-gray-500">{randomDescription}</p>
       </CardContent>
     </Card>
   );
 };
 
 export default function App() {
+  const [isHorizontal, setIsHorizontal] = useState(true);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentSubStep, setCurrentSubStep] = useState(0);
+
   const steps = [
     {
       name: "Getting Information",
-      subSteps: [{ name: "Personal" }, { name: "Family" }],
+      subSteps: [
+        { name: "Personal", isActive: true },
+        { name: "Family", isActive: false },
+      ],
     },
     {
       name: "Sign Docs",
       subSteps: [
-        { name: "Waiver" },
-        {
-          name: "Ownership",
-          subSteps: [{ name: "Car" }, { name: "House" }],
-        },
+        { name: "Waiver", isActive: false },
+        { name: "Ownership", isActive: false },
       ],
     },
-    { name: "Final Review" },
+    {
+      name: "Final Review",
+      subSteps: [{ name: "Review", isActive: false }],
+    },
   ];
+
+  const handleStepChange = (stepIndex, subStepIndex) => {
+    setCurrentStep(stepIndex);
+    setCurrentSubStep(subStepIndex);
+  };
 
   return (
     <div className="container mx-auto p-4">
-      <Stepper steps={steps} />
+      <Button onClick={() => setIsHorizontal(!isHorizontal)} className="mb-4">
+        Flip
+      </Button>
+      <Stepper
+        steps={steps}
+        isHorizontal={isHorizontal}
+        onStepChange={handleStepChange}
+      />
+      <div className="mt-4 flex justify-between">
+        <Button
+          onClick={() => handleStepChange(currentStep, currentSubStep - 1)}
+        >
+          Previous
+        </Button>
+        <Button
+          onClick={() => handleStepChange(currentStep, currentSubStep + 1)}
+        >
+          Next
+        </Button>
+      </div>
+      <StepContent
+        step={steps[currentStep]}
+        subStep={steps[currentStep].subSteps[currentSubStep]}
+      />
     </div>
   );
 }
