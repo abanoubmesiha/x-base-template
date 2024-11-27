@@ -42,11 +42,11 @@ const MoneyField = ({ label, value, onChange }) => {
       <Input
         id={label}
         type="text"
-        value={value === "" ? "" : `$${value}`}
+        value={value === "" ? "" : `${value}`}
         onChange={handleChange}
-        className="pl-6"
+        className="pe-6"
       />
-      <span className="absolute left-2 top-8 text-gray-500">$</span>
+      <span className="absolute end-2 top-8 text-gray-500">$</span>
     </div>
   );
 };
