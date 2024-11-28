@@ -1,57 +1,39 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
-const Stepper = ({ steps, isHorizontal, onStepChange }) => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [activeSubStep, setActiveSubStep] = useState(0);
-
-  const handleNext = () => {
-    if (activeSubStep < steps[activeStep].subSteps.length - 1) {
-      setActiveSubStep(activeSubStep + 1);
-    } else if (activeStep < steps.length - 1) {
-      setActiveStep(activeStep + 1);
-      setActiveSubStep(0);
-    }
-    onStepChange(activeStep, activeSubStep);
-  };
-
-  const handlePrevious = () => {
-    if (activeSubStep > 0) {
-      setActiveSubStep(activeSubStep - 1);
-    } else if (activeStep > 0) {
-      setActiveStep(activeStep - 1);
-      setActiveSubStep(steps[activeStep - 1].subSteps.length - 1);
-    }
-    onStepChange(activeStep, activeSubStep);
-  };
-
-  const handleStepClick = (stepIndex, subStepIndex) => {
-    setActiveStep(stepIndex);
-    setActiveSubStep(subStepIndex);
-    onStepChange(stepIndex, subStepIndex);
-  };
-
+const Stepper = ({ steps, isHorizontal, currentStep, currentSubStep }) => {
   return (
     <div className={`flex ${isHorizontal ? "flex-row" : "flex-col"} gap-4`}>
       {steps.map((step, stepIndex) => (
         <div
-          key={stepIndex}
+          key={step.name + stepIndex}
           className={`flex ${
             isHorizontal ? "flex-col" : "flex-row"
           } items-center gap-2`}
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${
-              stepIndex <= activeStep
-                ? "bg-blue-500 text-white"
-                : "bg-gray-300 text-gray-600"
-            }`}
+            className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center cursor-pointer",
+              !step.isActive && "bg-gray-300 text-gray-600",
+              currentStep >= stepIndex && "bg-green-500 text-white",
+              step.isActive && "bg-blue-500 text-white"
+            )}
             onClick={() => handleStepClick(stepIndex, 0)}
           >
             {stepIndex + 1}
           </div>
-          <div className="text-sm font-medium">{step.name}</div>
+          <div
+            className={cn(
+              "text-sm font-medium",
+              !step.isActive && "text-gray-300",
+              currentStep >= stepIndex && "text-green-500",
+              step.isActive && "text-blue-500"
+            )}
+          >
+            {step.name}
+          </div>
           <div
             className={`flex ${
               isHorizontal ? "flex-row" : "flex-col"
@@ -59,12 +41,16 @@ const Stepper = ({ steps, isHorizontal, onStepChange }) => {
           >
             {step.subSteps.map((subStep, subStepIndex) => (
               <div
-                key={subStepIndex}
-                className={`text-xs cursor-pointer ${
-                  stepIndex === activeStep && subStepIndex <= activeSubStep
-                    ? "text-blue-500 font-bold"
-                    : "text-gray-500"
-                }`}
+                key={subStep.name + subStepIndex}
+                className={cn(
+                  "text-xs cursor-pointer",
+                  !subStep.isActive && "text-gray-600",
+                  currentStep > stepIndex && "text-green-600",
+                  currentStep === stepIndex &&
+                    currentSubStep >= subStepIndex &&
+                    "text-green-600",
+                  subStep.isActive && "text-blue-600 font-bold"
+                )}
                 onClick={() => handleStepClick(stepIndex, subStepIndex)}
               >
                 {subStep.name}
@@ -95,17 +81,14 @@ const StepContent = ({ step, subStep }) => {
 };
 
 export default function App() {
-  const [isHorizontal, setIsHorizontal] = useState(true);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [currentSubStep, setCurrentSubStep] = useState(0);
-
-  const steps = [
+  const [steps, setSteps] = useState([
     {
       name: "Getting Information",
       subSteps: [
         { name: "Personal", isActive: true },
         { name: "Family", isActive: false },
       ],
+      isActive: false,
     },
     {
       name: "Sign Docs",
@@ -113,16 +96,69 @@ export default function App() {
         { name: "Waiver", isActive: false },
         { name: "Ownership", isActive: false },
       ],
+      isActive: false,
     },
     {
       name: "Final Review",
       subSteps: [{ name: "Review", isActive: false }],
+      isActive: false,
     },
-  ];
+  ]);
+  const [isHorizontal, setIsHorizontal] = useState(true);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentSubStep, setCurrentSubStep] = useState(0);
 
-  const handleStepChange = (stepIndex, subStepIndex) => {
-    setCurrentStep(stepIndex);
-    setCurrentSubStep(subStepIndex);
+  const handleNext = () => {
+    if (currentSubStep < steps[currentStep].subSteps.length - 1) {
+      setCurrentSubStep(currentSubStep + 1);
+      console.log("🚀 ~ setSteps ~ currentStep:", currentStep);
+      console.log("🚀 ~ setSteps ~ currentSubStep:", currentSubStep);
+      setSteps((prev) => {
+        const updatedSteps = [...prev];
+        updatedSteps[currentStep].subSteps[currentSubStep].isActive = false;
+        updatedSteps[currentStep].isActive = true;
+        updatedSteps[currentStep].subSteps[currentSubStep + 1].isActive = true;
+        return updatedSteps;
+      });
+    } else if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setCurrentSubStep(0);
+      setSteps((prev) => {
+        const updatedSteps = [...prev];
+        updatedSteps[currentStep].isActive = false;
+        updatedSteps[currentStep].subSteps[
+          updatedSteps[currentStep].subSteps.length - 1
+        ].isActive = false;
+        updatedSteps[currentStep + 1].isActive = true;
+        updatedSteps[currentStep + 1].subSteps[0].isActive = true;
+        return updatedSteps;
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSubStep > 0) {
+      setCurrentSubStep(currentSubStep - 1);
+      setSteps((prev) => {
+        const updatedSteps = [...prev];
+        updatedSteps[currentStep].subSteps[currentSubStep].isActive = false;
+        updatedSteps[currentStep].isActive = true;
+        updatedSteps[currentStep].subSteps[currentSubStep - 1].isActive = true;
+        return updatedSteps;
+      });
+    } else if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+      setCurrentSubStep(steps[currentStep - 1].subSteps.length - 1);
+      setSteps((prev) => {
+        const updatedSteps = [...prev];
+        updatedSteps[currentStep].isActive = false;
+        updatedSteps[currentStep - 1].isActive = true;
+        updatedSteps[currentStep - 1].subSteps[
+          updatedSteps[currentStep - 1].subSteps.length - 1
+        ].isActive = true;
+        return updatedSteps;
+      });
+    }
   };
 
   return (
@@ -133,19 +169,12 @@ export default function App() {
       <Stepper
         steps={steps}
         isHorizontal={isHorizontal}
-        onStepChange={handleStepChange}
+        currentStep={currentStep}
+        currentSubStep={currentSubStep}
       />
       <div className="mt-4 flex justify-between">
-        <Button
-          onClick={() => handleStepChange(currentStep, currentSubStep - 1)}
-        >
-          Previous
-        </Button>
-        <Button
-          onClick={() => handleStepChange(currentStep, currentSubStep + 1)}
-        >
-          Next
-        </Button>
+        <Button onClick={handlePrevious}>Previous</Button>
+        <Button onClick={handleNext}>Next</Button>
       </div>
       <StepContent
         step={steps[currentStep]}
