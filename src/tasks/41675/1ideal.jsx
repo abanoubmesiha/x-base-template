@@ -206,10 +206,14 @@ function CountryDropdown({ value, onChange }) {
   const [filteredCountries, setFilteredCountries] = useState(countries);
 
   useEffect(() => {
-    const filtered = countries.filter((country) =>
-      country.toLowerCase().includes(search.toLowerCase())
-    );
-    setFilteredCountries(filtered);
+    if (search !== value) {
+      const filtered = countries.filter((country) =>
+        country.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    } else {
+      setFilteredCountries(countries);
+    }
   }, [search]);
 
   const handleInputFocus = () => setIsOpen(true);
