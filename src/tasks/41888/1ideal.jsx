@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import "@/index.css";
 import React, { useMemo, useState } from "react";
 
@@ -93,6 +92,7 @@ const countries = [
   "Ireland",
   "Israel",
   "Italy",
+  "Ivory Coast",
   "Jamaica",
   "Japan",
   "Jordan",
@@ -249,7 +249,7 @@ function CountryWeight({ country, weight, unit }) {
 
 function CountryWeightsList({ weight, unit }) {
   return (
-    <ScrollArea className="max-h-64 mt-4">
+    <div className="max-h-96 overflow-y-auto mt-4 border rounded-md">
       {countries.map((country) => (
         <CountryWeight
           key={country}
@@ -258,7 +258,7 @@ function CountryWeightsList({ weight, unit }) {
           unit={unit}
         />
       ))}
-    </ScrollArea>
+    </div>
   );
 }
 
