@@ -1,20 +1,16 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import "@/index.css";
-import { useMemo, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import React, { useEffect, useState } from "react";
 
+// Country data can be fetched from an API or included as a static list
 const countries = [
   "Afghanistan",
   "Albania",
   "Algeria",
   "Andorra",
   "Angola",
+  "Antigua and Barbuda",
   "Argentina",
   "Armenia",
   "Australia",
@@ -37,10 +33,10 @@ const countries = [
   "Bulgaria",
   "Burkina Faso",
   "Burundi",
-  "Cabo Verde",
   "Cambodia",
   "Cameroon",
   "Canada",
+  "Cape Verde",
   "Central African Republic",
   "Chad",
   "Chile",
@@ -57,13 +53,13 @@ const countries = [
   "Djibouti",
   "Dominica",
   "Dominican Republic",
+  "East Timor",
   "Ecuador",
   "Egypt",
   "El Salvador",
   "Equatorial Guinea",
   "Eritrea",
   "Estonia",
-  "Eswatini",
   "Ethiopia",
   "Fiji",
   "Finland",
@@ -90,12 +86,15 @@ const countries = [
   "Ireland",
   "Israel",
   "Italy",
+  "Ivory Coast",
   "Jamaica",
   "Japan",
   "Jordan",
   "Kazakhstan",
   "Kenya",
   "Kiribati",
+  "North Korea",
+  "South Korea",
   "Kuwait",
   "Kyrgyzstan",
   "Laos",
@@ -107,6 +106,7 @@ const countries = [
   "Liechtenstein",
   "Lithuania",
   "Luxembourg",
+  "Macedonia",
   "Madagascar",
   "Malawi",
   "Malaysia",
@@ -133,13 +133,10 @@ const countries = [
   "Nicaragua",
   "Niger",
   "Nigeria",
-  "North Korea",
-  "North Macedonia",
   "Norway",
   "Oman",
   "Pakistan",
   "Palau",
-  "Palestine",
   "Panama",
   "Papua New Guinea",
   "Paraguay",
@@ -168,12 +165,11 @@ const countries = [
   "Solomon Islands",
   "Somalia",
   "South Africa",
-  "South Korea",
-  "South Sudan",
   "Spain",
   "Sri Lanka",
   "Sudan",
   "Suriname",
+  "Swaziland",
   "Sweden",
   "Switzerland",
   "Syria",
@@ -181,7 +177,6 @@ const countries = [
   "Tajikistan",
   "Tanzania",
   "Thailand",
-  "Timor-Leste",
   "Togo",
   "Tonga",
   "Trinidad and Tobago",
@@ -205,122 +200,91 @@ const countries = [
   "Zimbabwe",
 ];
 
-function Dropdown({ options, value, onChange }) {
+function CountryDropdown({ value, onChange }) {
   const [search, setSearch] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [filteredCountries, setFilteredCountries] = useState(countries);
 
-  const filteredOptions = useMemo(
-    () =>
-      options.filter((option) =>
-        option.toLowerCase().includes(search.toLowerCase())
-      ),
-    [search, options]
-  );
+  useEffect(() => {
+    const filtered = countries.filter((country) =>
+      country.toLowerCase().includes(search.toLowerCase())
+    );
+    setFilteredCountries(filtered);
+  }, [search]);
 
-  const handleBlur = (event) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.relatedTarget)
-    ) {
-      setTimeout(() => {
-        setShowDropdown(false);
-      }, 100);
-    }
+  const handleInputFocus = () => setIsOpen(true);
+  const handleBlur = () => setTimeout(() => setIsOpen(false), 200);
+
+  const highlightMatch = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+    return (
+      <span>
+        {parts.map((part, i) =>
+          part.toLowerCase() === highlight.toLowerCase() ? (
+            <b key={i}>{part}</b>
+          ) : (
+            part
+          )
+        )}
+      </span>
+    );
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <input
-        type="text"
-        className="w-full p-2 border border-gray-300 rounded-md"
-        placeholder="Type to search..."
+    <div className="relative w-full max-w-xs">
+      <Input
         value={search}
-        onFocus={() => setShowDropdown(true)}
-        onBlur={handleBlur}
         onChange={(e) => setSearch(e.target.value)}
+        onFocus={handleInputFocus}
+        onBlur={handleBlur}
+        placeholder="Type to search countries..."
       />
-      {showDropdown && (
-        <ul className="absolute w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto">
-          {filteredOptions.length > 0
-            ? filteredOptions.map((option, index) => (
-                <li
-                  key={index}
-                  className={`p-2 hover:bg-gray-100 ${
-                    option === value ? "bg-gray-200" : ""
-                  }`}
-                  onClick={() => {
-                    console.log("🚀 ~ Dropdown ~ option:", option);
-                    onChange(option);
-                    setSearch(option);
-                    setShowDropdown(false);
-                  }}
-                >
-                  {highlightSearch(option, search)}
-                </li>
-              ))
-            : options.map((option, index) => (
-                <li
-                  key={index}
-                  className={`p-2 hover:bg-gray-100 ${
-                    option === value ? "bg-gray-200" : ""
-                  }`}
-                  onClick={() => {
-                    console.log("🚀 ~ Dropdown ~ option:", option);
-                    onChange(option);
-                    setSearch(option);
-                    setShowDropdown(false);
-                  }}
-                >
-                  {option}
-                </li>
-              ))}
-        </ul>
+      {isOpen && (
+        <div className="absolute z-10 mt-2 w-full bg-white shadow-lg rounded-md max-h-64 overflow-y-auto">
+          <ScrollArea className="h-full">
+            {filteredCountries.map((country, idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "px-4 py-2 cursor-pointer hover:bg-muted",
+                  country === value && "bg-primary text-primary-foreground"
+                )}
+                onClick={() => {
+                  onChange(country);
+                  setSearch(country);
+                  setIsOpen(false);
+                }}
+              >
+                {search ? highlightMatch(country, search) : country}
+              </div>
+            ))}
+            {filteredCountries.length === 0 && (
+              <div className="px-4 py-2 text-muted-foreground">
+                No countries found.
+              </div>
+            )}
+          </ScrollArea>
+        </div>
       )}
     </div>
   );
 }
 
-function highlightSearch(text, search) {
-  const regex = new RegExp(`(${search})`, "gi");
-  const parts = text.split(regex);
-  return parts.map((part, index) =>
-    regex.test(part) ? (
-      <span key={index} className="font-bold">
-        {part}
-      </span>
-    ) : (
-      part
-    )
-  );
-}
-
 export default function App() {
   const [selectedCountry, setSelectedCountry] = useState("");
-  console.log("🚀 ~ App ~ selectedCountry:", selectedCountry);
 
   return (
-    <div className="p-4 sm:p-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>Country Selector</CardTitle>
-          <CardDescription>
-            Select a country from the dropdown below
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Dropdown
-            options={countries}
-            value={selectedCountry}
-            onChange={setSelectedCountry}
-          />
-        </CardContent>
-        <CardFooter>
-          <p className="text-sm text-gray-500">
-            Selected Country: {selectedCountry}
-          </p>
-        </CardFooter>
-      </Card>
+    <div className="flex flex-col items-center justify-center h-screen bg-background">
+      <div className="sm:max-w-sm w-full p-4">
+        <h1 className="text-2xl font-bold mb-4 text-center">
+          Country Selector
+        </h1>
+        <CountryDropdown
+          value={selectedCountry}
+          onChange={setSelectedCountry}
+        />
+        <p className="mt-4 text-center">Selected: {selectedCountry}</p>
+      </div>
     </div>
   );
 }
