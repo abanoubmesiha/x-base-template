@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 
-// Country data can be fetched from an API or included as a static list
+// Static list of countries for the dropdown options
 const countries = [
   "Afghanistan",
   "Albania",
@@ -201,10 +201,11 @@ const countries = [
 ];
 
 function CountryDropdown({ value, onChange }) {
-  const [search, setSearch] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [filteredCountries, setFilteredCountries] = useState(countries);
+  const [search, setSearch] = useState(""); // State to manage search input
+  const [isOpen, setIsOpen] = useState(false); // State to manage dropdown visibility
+  const [filteredCountries, setFilteredCountries] = useState(countries); // State to manage filtered country list
 
+  // Update filtered countries when search input changes
   useEffect(() => {
     if (search !== value) {
       const filtered = countries.filter((country) =>
@@ -216,9 +217,10 @@ function CountryDropdown({ value, onChange }) {
     }
   }, [search]);
 
-  const handleInputFocus = () => setIsOpen(true);
-  const handleBlur = () => setTimeout(() => setIsOpen(false), 200);
+  const handleInputFocus = () => setIsOpen(true); // Show dropdown on input focus
+  const handleBlur = () => setTimeout(() => setIsOpen(false), 200); // Hide dropdown on blur with a delay
 
+  // Highlight matching search term in the country name
   const highlightMatch = (text, highlight) => {
     const parts = text.split(new RegExp(`(${highlight})`, "gi"));
     return (
@@ -275,7 +277,7 @@ function CountryDropdown({ value, onChange }) {
 }
 
 export default function App() {
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(""); // State for the selected country
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-background">
