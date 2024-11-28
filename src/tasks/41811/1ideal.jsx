@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
+// Component to display steps and sub-steps
 const Stepper = ({ steps, isHorizontal, currentStep, currentSubStep }) => {
   return (
     <div className={`flex ${isHorizontal ? "flex-row" : "flex-col"} gap-4`}>
@@ -63,6 +64,7 @@ const Stepper = ({ steps, isHorizontal, currentStep, currentSubStep }) => {
   );
 };
 
+// Component to show content related to current step and sub-step
 const StepContent = ({ step, subStep }) => {
   const randomText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. ${step.name} - ${subStep?.name}`;
   const randomDescription = `Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ${step.name} - ${subStep?.name}`;
@@ -80,6 +82,7 @@ const StepContent = ({ step, subStep }) => {
   );
 };
 
+// Main application component
 export default function App() {
   const [steps, setSteps] = useState([
     {
@@ -108,11 +111,10 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentSubStep, setCurrentSubStep] = useState(0);
 
+  // Function to navigate to the next step or sub-step
   const handleNext = () => {
     if (currentSubStep < steps[currentStep].subSteps.length - 1) {
       setCurrentSubStep(currentSubStep + 1);
-      console.log("🚀 ~ setSteps ~ currentStep:", currentStep);
-      console.log("🚀 ~ setSteps ~ currentSubStep:", currentSubStep);
       setSteps((prev) => {
         const updatedSteps = [...prev];
         updatedSteps[currentStep].subSteps[currentSubStep].isActive = false;
@@ -136,6 +138,7 @@ export default function App() {
     }
   };
 
+  // Function to navigate to the previous step or sub-step
   const handlePrevious = () => {
     if (currentSubStep > 0) {
       setCurrentSubStep(currentSubStep - 1);
