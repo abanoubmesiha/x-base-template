@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import "@/index.css";
 import React, { useState } from "react";
 
-// Mock data
+// Function to generate mock data for invoices
 const generateRandomData = () => {
   const statuses = ["Paid", "Pending", "Overdue"];
   const methods = ["Credit Card", "Bank Transfer", "Cash"];
 
+  // Creating mock data with sub-rows
   const data = Array.from({ length: 10 }, (_, i) => ({
     invoice: `INV-${i + 1}`,
     status: statuses[Math.floor(Math.random() * statuses.length)],
@@ -23,7 +23,7 @@ const generateRandomData = () => {
   return data;
 };
 
-// Table Row Component
+// Component to render each table row, including sub-rows
 function TableRow({ row, isChecked, onCheckboxChange }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -81,11 +81,12 @@ function TableRow({ row, isChecked, onCheckboxChange }) {
   );
 }
 
-// Main App Component
+// Main App Component to render the table and handle state
 export default function App() {
   const [data] = useState(generateRandomData());
   const [selectedRows, setSelectedRows] = useState(new Set());
 
+  // Calculate total amount and selected total amount
   const totalAmount = data.reduce(
     (total, row) =>
       total +
@@ -102,6 +103,7 @@ export default function App() {
     );
   }, 0);
 
+  // Handle select all checkbox change
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       const allKeys = new Set(data.map((_, i) => i));
@@ -111,6 +113,7 @@ export default function App() {
     }
   };
 
+  // Handle individual row checkbox change
   const handleRowCheckboxChange = (index) => {
     setSelectedRows((prev) => {
       const newSet = new Set(prev);
