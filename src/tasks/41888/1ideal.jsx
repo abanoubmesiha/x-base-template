@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import "@/index.css";
 import React, { useMemo, useState } from "react";
 
+// List of all countries
 const countries = [
   "Afghanistan",
   "Albania",
@@ -206,6 +207,7 @@ const countries = [
   "Zimbabwe",
 ];
 
+// List of weight units
 const units = [
   "Gram",
   "Slug",
@@ -219,6 +221,7 @@ const units = [
   "Pound",
 ];
 
+// Function to convert weight between units
 function convertWeight(weight, unitFrom, unitTo) {
   const conversions = {
     Gram: 1,
@@ -236,6 +239,7 @@ function convertWeight(weight, unitFrom, unitTo) {
   return (weight * conversions[unitFrom]) / conversions[unitTo];
 }
 
+// Component to display weight in a specific country
 function CountryWeight({ country, weight, unit }) {
   return (
     <div className="flex justify-between p-2 border-b">
@@ -247,6 +251,7 @@ function CountryWeight({ country, weight, unit }) {
   );
 }
 
+// Component to display weights in all countries
 function CountryWeightsList({ weight, unit }) {
   return (
     <div className="max-h-96 overflow-y-auto mt-4 border rounded-md">
@@ -262,12 +267,14 @@ function CountryWeightsList({ weight, unit }) {
   );
 }
 
+// Main component for weight conversion
 function WeightConverter() {
   const [objectName, setObjectName] = useState("");
   const [weight, setWeight] = useState("");
   const [unit, setUnit] = useState("Kilogram");
   const [country, setCountry] = useState("Egypt");
 
+  // Calculate converted weight
   const convertedWeight = useMemo(() => {
     return weight
       ? convertWeight(parseFloat(weight.replace(/,/g, "")), unit, unit)
@@ -354,6 +361,7 @@ function WeightConverter() {
   );
 }
 
+// Main App component
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
