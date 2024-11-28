@@ -1,151 +1,326 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import React, { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import "@/index.css";
+import { useMemo, useRef, useState } from "react";
 
-// MicrophoneControl component to manage individual microphone controls
-const MicrophoneControl = ({
-  mic,
-  onToggle,
-  onVolumeChange,
-  onCameraToggle,
-}) => {
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Mic {mic.id}</span>
-          {/* Toggle switch to activate/deactivate microphone */}
-          <Switch
-            checked={mic.active}
-            onCheckedChange={() => onToggle(mic.id)}
-          />
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <span className="w-20">Volume:</span>
-            {/* Slider to control volume */}
-            <Slider
-              value={[mic.volume]}
-              onValueChange={(value) => onVolumeChange(mic.id, value[0])}
-              max={100}
-              step={1}
-              className="flex-grow"
-            />
-            <span className="w-8 text-right">{mic.volume}%</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span>Camera:</span>
-            {/* Toggle switch to activate/deactivate camera */}
-            <Switch
-              checked={mic.cameraActive}
-              onCheckedChange={() => onCameraToggle(mic.id)}
-            />
-          </div>
-          {/* Indicator for volume amplitude */}
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-500 transition-all duration-300"
-              style={{ width: `${mic.amplitude}%` }}
-            ></div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+const countries = [
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Andorra",
+  "Angola",
+  "Argentina",
+  "Armenia",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bhutan",
+  "Bolivia",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Brazil",
+  "Brunei",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cabo Verde",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Central African Republic",
+  "Chad",
+  "Chile",
+  "China",
+  "Colombia",
+  "Comoros",
+  "Congo",
+  "Costa Rica",
+  "Croatia",
+  "Cuba",
+  "Cyprus",
+  "Czech Republic",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Eritrea",
+  "Estonia",
+  "Eswatini",
+  "Ethiopia",
+  "Fiji",
+  "Finland",
+  "France",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Grenada",
+  "Guatemala",
+  "Guinea",
+  "Guinea-Bissau",
+  "Guyana",
+  "Haiti",
+  "Honduras",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kiribati",
+  "Kuwait",
+  "Kyrgyzstan",
+  "Laos",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Marshall Islands",
+  "Mauritania",
+  "Mauritius",
+  "Mexico",
+  "Micronesia",
+  "Moldova",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Morocco",
+  "Mozambique",
+  "Myanmar",
+  "Namibia",
+  "Nauru",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "North Korea",
+  "North Macedonia",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palau",
+  "Palestine",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Rwanda",
+  "Saint Kitts and Nevis",
+  "Saint Lucia",
+  "Saint Vincent and the Grenadines",
+  "Samoa",
+  "San Marino",
+  "Sao Tome and Principe",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "Solomon Islands",
+  "Somalia",
+  "South Africa",
+  "South Korea",
+  "South Sudan",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Suriname",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Taiwan",
+  "Tajikistan",
+  "Tanzania",
+  "Thailand",
+  "Timor-Leste",
+  "Togo",
+  "Tonga",
+  "Trinidad and Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Tuvalu",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom",
+  "United States",
+  "Uruguay",
+  "Uzbekistan",
+  "Vanuatu",
+  "Vatican City",
+  "Venezuela",
+  "Vietnam",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
+];
+
+function Dropdown({ options, value, onChange }) {
+  const [search, setSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const filteredOptions = useMemo(
+    () =>
+      options.filter((option) =>
+        option.toLowerCase().includes(search.toLowerCase())
+      ),
+    [search, options]
   );
-};
 
-// CameraPreview component to show the camera feed preview
-const CameraPreview = ({ mic }) => {
+  const handleBlur = (event) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.relatedTarget)
+    ) {
+      setTimeout(() => {
+        setShowDropdown(false);
+      }, 100);
+    }
+  };
+
   return (
-    <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden">
-      <div className="absolute inset-0 flex items-center justify-center text-white">
-        Camera {mic.id}
-      </div>
+    <div className="relative" ref={dropdownRef}>
+      <input
+        type="text"
+        className="w-full p-2 border border-gray-300 rounded-md"
+        placeholder="Type to search..."
+        value={search}
+        onFocus={() => setShowDropdown(true)}
+        onBlur={handleBlur}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      {showDropdown && (
+        <ul className="absolute w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto">
+          {filteredOptions.length > 0
+            ? filteredOptions.map((option, index) => (
+                <li
+                  key={index}
+                  className={`p-2 hover:bg-gray-100 ${
+                    option === value ? "bg-gray-200" : ""
+                  }`}
+                  onClick={() => {
+                    console.log("🚀 ~ Dropdown ~ option:", option);
+                    onChange(option);
+                    setSearch(option);
+                    setShowDropdown(false);
+                  }}
+                >
+                  {highlightSearch(option, search)}
+                </li>
+              ))
+            : options.map((option, index) => (
+                <li
+                  key={index}
+                  className={`p-2 hover:bg-gray-100 ${
+                    option === value ? "bg-gray-200" : ""
+                  }`}
+                  onClick={() => {
+                    console.log("🚀 ~ Dropdown ~ option:", option);
+                    onChange(option);
+                    setSearch(option);
+                    setShowDropdown(false);
+                  }}
+                >
+                  {option}
+                </li>
+              ))}
+        </ul>
+      )}
     </div>
   );
-};
+}
 
-// Main App component
+function highlightSearch(text, search) {
+  const regex = new RegExp(`(${search})`, "gi");
+  const parts = text.split(regex);
+  return parts.map((part, index) =>
+    regex.test(part) ? (
+      <span key={index} className="font-bold">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 export default function App() {
-  const [mics, setMics] = useState([
-    { id: 1, active: false, volume: 50, cameraActive: false, amplitude: 0 },
-    { id: 2, active: false, volume: 50, cameraActive: false, amplitude: 0 },
-    { id: 3, active: false, volume: 50, cameraActive: false, amplitude: 0 },
-    { id: 4, active: false, volume: 50, cameraActive: false, amplitude: 0 },
-  ]);
-
-  // Handle toggling microphone active state
-  const handleToggle = (id) => {
-    setMics((prevMics) =>
-      prevMics.map((mic) =>
-        mic.id === id ? { ...mic, active: !mic.active } : mic
-      )
-    );
-  };
-
-  // Handle changing microphone volume
-  const handleVolumeChange = (id, volume) => {
-    setMics((prevMics) =>
-      prevMics.map((mic) => (mic.id === id ? { ...mic, volume } : mic))
-    );
-  };
-
-  // Handle toggling camera active state
-  const handleCameraToggle = (id) => {
-    setMics((prevMics) =>
-      prevMics.map((mic) =>
-        mic.id === id ? { ...mic, cameraActive: !mic.cameraActive } : mic
-      )
-    );
-  };
-
-  // Simulate amplitude changes
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setMics((prevMics) =>
-        prevMics.map((mic) => ({
-          ...mic,
-          amplitude: mic.active ? Math.random() * 100 : 0,
-        }))
-      );
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Filter for active cameras
-  const activeCameras = mics.filter((mic) => mic.cameraActive);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  console.log("🚀 ~ App ~ selectedCountry:", selectedCountry);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Theater Microphone Control Panel
-      </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Render controls for each microphone */}
-        {mics.map((mic) => (
-          <MicrophoneControl
-            key={mic.id}
-            mic={mic}
-            onToggle={handleToggle}
-            onVolumeChange={handleVolumeChange}
-            onCameraToggle={handleCameraToggle}
+    <div className="p-4 sm:p-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Country Selector</CardTitle>
+          <CardDescription>
+            Select a country from the dropdown below
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Dropdown
+            options={countries}
+            value={selectedCountry}
+            onChange={setSelectedCountry}
           />
-        ))}
-      </div>
-      {/* Show camera previews if any cameras are active */}
-      {activeCameras.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Camera Previews</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {activeCameras.map((mic) => (
-              <CameraPreview key={mic.id} mic={mic} />
-            ))}
-          </div>
-        </div>
-      )}
+        </CardContent>
+        <CardFooter>
+          <p className="text-sm text-gray-500">
+            Selected Country: {selectedCountry}
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
