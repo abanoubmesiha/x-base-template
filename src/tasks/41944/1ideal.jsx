@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import React, { useState } from "react";
 
+// Combobox component to handle selection with a popover
 function Combobox({ id, value, onChange, options, placeholder, className }) {
   const [open, setOpen] = React.useState(false);
 
@@ -75,16 +76,17 @@ function Combobox({ id, value, onChange, options, placeholder, className }) {
   );
 }
 
+// Main App component for user verification
 export default function App() {
-  const [verificationType, setVerificationType] = useState("");
-  const [otp, setOtp] = useState("");
+  const [verificationType, setVerificationType] = useState(""); // State to track verification type
+  const [otp, setOtp] = useState(""); // State to track OTP
 
   const handleVerificationChange = (event) => {
-    setVerificationType(event.target.value);
+    setVerificationType(event.target.value); // Handle change in verification type
   };
 
   const handleOtpChange = (value) => {
-    setOtp(value);
+    setOtp(value); // Handle change in OTP
   };
 
   const handleSubmit = (event) => {
