@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -5,10 +6,74 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
-import { OTPInput } from "@/components/ui/otp-input";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import React, { useState } from "react";
-import "tailwindcss/tailwind.css";
+
+function Combobox({ id, value, onChange, options, placeholder, className }) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={className}
+        >
+          {value
+            ? options.find((option) => option.value === value)?.label
+            : placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search option..." />
+          <CommandList>
+            <CommandEmpty>No option found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={(currentValue) => {
+                    onChange({
+                      target: {
+                        value: currentValue === value ? "" : currentValue,
+                      },
+                    });
+                    setOpen(false);
+                  }}
+                >
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export default function App() {
   const [verificationType, setVerificationType] = useState("");
@@ -61,14 +126,25 @@ export default function App() {
               <label htmlFor="otp" className="mb-2">
                 OTP
               </label>
-              <OTPInput
+              <InputOTP
                 id="otp"
+                maxLength={6}
                 value={otp}
                 onChange={handleOtpChange}
-                numInputs={6}
-                separator={<span>-</span>}
                 className="otp-input"
-              />
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             <button
               type="submit"
