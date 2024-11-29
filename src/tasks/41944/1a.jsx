@@ -1,49 +1,81 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
+import { OtpInput } from "@/components/ui/otp-input";
+import { ToastProvider, useToast } from "@/components/ui/use-toast";
 import React, { useState } from "react";
 
-const FruitSelector = () => {
-  const [selectedFruit, setSelectedFruit] = useState("");
+const VerificationMethodCombobox = ({ value, onChange }) => {
+  const methods = [
+    { value: "sms", label: "SMS" },
+    { value: "email", label: "Email" },
+    { value: "phone", label: "Phone Call" },
+  ];
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Fruit Selector 1b</CardTitle>
-          <CardDescription>
-            Choose your favorite fruit from the options below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">
-            Selected fruit: {selectedFruit || "no selection"}
-          </p>
-          <Select onValueChange={(value) => setSelectedFruit(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a fruit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Apple">Apple</SelectItem>
-              <SelectItem value="Banana">Banana</SelectItem>
-              <SelectItem value="Strawberry">Strawberry</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-    </div>
+    <Combobox
+      value={value}
+      onValueChange={onChange}
+      items={methods}
+      placeholder="Select Verification Method"
+    >
+      {methods.map((method) => (
+        <Combobox.Option key={method.value} value={method.value}>
+          {method.label}
+        </Combobox.Option>
+      ))}
+    </Combobox>
   );
 };
 
-export default FruitSelector;
+function VerificationScreen() {
+  const [method, setMethod] = useState("sms");
+  const [otp, setOtp] = useState("");
+  const { toast } = useToast();
+
+  const handleSubmit = () => {
+    if (otp.length !== 6) {
+      toast({
+        title: "Error",
+        description: "OTP must be 6 digits long.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Here you would typically send the OTP for verification
+    toast({
+      title: "Success",
+      description: `Verification via ${method.toUpperCase()} successful!`,
+    });
+  };
+
+  return (
+    <Card className="max-w-sm mx-auto mt-10">
+      <CardHeader>
+        <CardTitle>Verify Your Identity</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Label htmlFor="verificationMethod">Verification Method</Label>
+          <VerificationMethodCombobox value={method} onChange={setMethod} />
+          <Label htmlFor="otp">Enter OTP</Label>
+          <OtpInput value={otp} onChange={setOtp} numInputs={6} />
+          <Button onClick={handleSubmit} className="w-full">
+            Verify
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <div className="flex h-screen bg-gray-100 items-center justify-center">
+        <VerificationScreen />
+      </div>
+    </ToastProvider>
+  );
+}
