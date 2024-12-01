@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from "@/components/ui/input";
+import React, { useDeferredValue, useMemo, useState } from "react";
 
-const FruitSelector = () => {
-  const [selectedFruit, setSelectedFruit] = useState('');
+function List({ query }) {
+  const LIST_SIZE = 2000;
+  const defferedQuery = useDeferredValue(query);
+  const list = useMemo(() => {
+    const l = [];
+    for (let i = 0; i < LIST_SIZE; i++) {
+      l.push(<div key={i}>{defferedQuery}</div>);
+    }
+    return l;
+  }, [defferedQuery]);
+  return list;
+}
+
+function App() {
+  const [value, setValue] = useState("");
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Fruit Selector 1ideal</CardTitle>
-          <CardDescription>Choose your favorite fruit from the options below.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Selected fruit: {selectedFruit || 'no selection'}</p>
-          <Select onValueChange={(value) => setSelectedFruit(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a fruit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Apple">Apple</SelectItem>
-              <SelectItem value="Banana">Banana</SelectItem>
-              <SelectItem value="Strawberry">Strawberry</SelectItem>
-              <SelectItem value="test">test</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <Input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <List query={value} />
+    </>
   );
-};
+}
 
-export default FruitSelector;
+export default App;
