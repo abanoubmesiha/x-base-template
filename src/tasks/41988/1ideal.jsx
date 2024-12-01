@@ -1,34 +1,82 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 
-const FruitSelector = () => {
-  const [selectedFruit, setSelectedFruit] = useState('');
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
+const items = [
+  {
+    title: "Home",
+    url: "#",
+    icon: Home,
+  },
+  {
+    title: "Inbox",
+    url: "#",
+    icon: Inbox,
+  },
+  {
+    title: "Calendar",
+    url: "#",
+    icon: Calendar,
+  },
+  {
+    title: "Search",
+    url: "#",
+    icon: Search,
+  },
+  {
+    title: "Settings",
+    url: "#",
+    icon: Settings,
+  },
+];
+
+function AppSidebar() {
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Fruit Selector 1ideal</CardTitle>
-          <CardDescription>Choose your favorite fruit from the options below.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">Selected fruit: {selectedFruit || 'no selection'}</p>
-          <Select onValueChange={(value) => setSelectedFruit(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a fruit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Apple">Apple</SelectItem>
-              <SelectItem value="Banana">Banana</SelectItem>
-              <SelectItem value="Strawberry">Strawberry</SelectItem>
-              <SelectItem value="test">test</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-    </div>
+    <Sidebar>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
-};
+}
 
-export default FruitSelector;
+function App() {
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <main>
+        <SidebarTrigger />
+        Page Content
+      </main>
+    </SidebarProvider>
+  );
+}
+
+export default App;
