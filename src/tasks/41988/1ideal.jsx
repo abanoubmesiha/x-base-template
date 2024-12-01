@@ -1,4 +1,5 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+// Import required components from lucide-react for icons.
 
 import {
   Sidebar,
@@ -12,8 +13,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+// Import necessary components from Shadcn for the sidebar.
 
 const items = [
+  // Define an array of navigation items, each with a title, URL, and icon.
   {
     title: "Home",
     url: "#",
@@ -49,6 +52,7 @@ function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Map through items to create a menu item for each nav item */}
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -70,6 +74,7 @@ function AppSidebar() {
 function App() {
   return (
     <SidebarProvider>
+      {/* Provide context for the sidebar */}
       <AppSidebar />
       <main>
         <SidebarTrigger />
