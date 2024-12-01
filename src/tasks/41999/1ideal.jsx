@@ -27,7 +27,9 @@ function App() {
         value={value}
         onChange={(e) => setValue(e.target.value)} // Update the state with the input value
       />
-      <List query={value} /> // Pass the input value to the List component
+      <List
+        query={value} // Pass the input value to the List component
+      />
     </>
   );
 }
