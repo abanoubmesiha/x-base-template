@@ -1,49 +1,47 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import React, { useCallback, useMemo, useState } from "react";
 
-const FruitSelector = () => {
-  const [selectedFruit, setSelectedFruit] = useState("");
+const Row = React.memo(function Row({ value }) {
+  return <div className="border-b p-2">{value}</div>;
+});
+
+function RowList({ filterValue }) {
+  const rows = useMemo(() => {
+    return Array.from(
+      { length: 2000 },
+      (_, i) => `Row ${i + 1}: ${filterValue}`
+    );
+  }, [filterValue]);
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <Card className="w-[350px]">
-        <CardHeader>
-          <CardTitle>Fruit Selector 1b</CardTitle>
-          <CardDescription>
-            Choose your favorite fruit from the options below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-4">
-            Selected fruit: {selectedFruit || "no selection"}
-          </p>
-          <Select onValueChange={(value) => setSelectedFruit(value)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a fruit" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Apple">Apple</SelectItem>
-              <SelectItem value="Banana">Banana</SelectItem>
-              <SelectItem value="Strawberry">Strawberry</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+    <div className="max-h-96 overflow-y-auto">
+      {rows.map((row, index) => (
+        <Row key={index} value={row} />
+      ))}
     </div>
   );
-};
+}
 
-export default FruitSelector;
+export default function App() {
+  const [inputValue, setInputValue] = useState("");
+
+  const handleInputChange = useCallback((event) => {
+    setInputValue(event.target.value);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <Input
+          placeholder="Type to filter rows..."
+          value={inputValue}
+          onChange={handleInputChange}
+          className="mb-4"
+        />
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <RowList filterValue={inputValue} />
+        </div>
+      </div>
+    </div>
+  );
+}
