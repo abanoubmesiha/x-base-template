@@ -12,11 +12,25 @@ import React, { useEffect, useState } from "react";
 const NumberCarousel = ({ onChange }) => {
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+  const [api, setApi] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    api.on("select", () => {
+      console.log("api.on.select");
+    });
+  }, [api]);
+
   return (
     <Carousel
+      setApi={setApi}
       opts={{
         align: "start",
         loop: true,
+        dragFree: true,
       }}
       orientation="vertical"
       className="w-full max-w-xs"
@@ -41,19 +55,37 @@ const NumberCarousel = ({ onChange }) => {
 };
 
 const LockDisplay = ({ code }) => (
-  <div className="flex justify-center space-x-4 my-4">
-    {code.map((digit, index) => (
-      <Card key={index} className="w-12 h-12 flex items-center justify-center">
-        <span className="text-2xl font-bold">{digit}</span>
-      </Card>
-    ))}
+  <div className="text-center p-6 pt-3">
+    <small className="d-block">Correct Combination</small>
+    <div className="flex justify-center space-x-4">
+      {code.map((digit, index) => (
+        <Card
+          key={index}
+          className="w-12 h-12 flex items-center justify-center"
+        >
+          <span className="text-2xl font-bold">{digit}</span>
+        </Card>
+      ))}
+    </div>
   </div>
 );
 
 export default function App() {
   const [code, setCode] = useState([0, 0, 0]);
+  console.log("🚀 ~ App ~ code:", code);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const correctCode = [4, 2, 0]; // Example correct code
+  // const [api, setApi] = React.useState < CarouselApi > null;
+
+  // React.useEffect(() => {
+  //   if (!api) {
+  //     return;
+  //   }
+
+  //   api.on("select", () => {
+  //     console.log("api.on.select");
+  //   });
+  // }, [api]);
 
   useEffect(() => {
     setIsUnlocked(JSON.stringify(code) === JSON.stringify(correctCode));
@@ -72,10 +104,12 @@ export default function App() {
           <CardTitle className="text-center">Suitcase Lock</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* <LockDisplay code={code} /> */}
-          <div className="flex justify-center space-x-4 my-12">
+          <LockDisplay code={correctCode} />
+          <div className="flex justify-center space-x-4 my-14">
             {[0, 1, 2].map((n) => (
+              // {[0].map((n) => (
               <NumberCarousel
+                // setApi={setApi}
                 key={n}
                 onChange={(value) => handleCodeChange(n, value)}
               />
