@@ -1,3 +1,4 @@
+// Importing necessary components from the context-menu and React libraries
 import {
   ContextMenu,
   ContextMenuContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/context-menu";
 import React, { useState } from "react";
 
+// Defining the list of weapons and their components
 const weapons = [
   {
     name: "AK-47",
@@ -68,6 +70,7 @@ const weapons = [
   },
 ];
 
+// Defining shared components between weapons
 const sharedComponents = {
   Magazine: ["AK-47", "M16", "Glock 17", "Desert Eagle", "MP5"],
   Barrel: ["AK-47", "M16", "Glock 17", "Desert Eagle", "MP5"],
@@ -76,6 +79,7 @@ const sharedComponents = {
   "7.62x39mm rounds": ["AK-47"],
 };
 
+// Component representing each weapon box
 const WeaponBox = ({ weapon, onMoveComponent }) => {
   return (
     <ContextMenu>
@@ -85,6 +89,7 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
+        {/* Loop through weapon components */}
         {Object.entries(weapon.components).map(([component, count], i) => {
           console.log(
             "🚀 ~ {Object.entries ~ sharedComponents[component]:",
@@ -96,6 +101,7 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
           return (
             <React.Fragment key={component}>
               {filteredSharedComponents?.length > 0 ? (
+                // Submenu for shared components
                 <ContextMenuSub>
                   <ContextMenuSubTrigger>
                     {component}: {count}
@@ -116,6 +122,7 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
                   </ContextMenuSubContent>
                 </ContextMenuSub>
               ) : (
+                // Display non-shared components
                 <ContextMenuItem>
                   {component}: {count}
                 </ContextMenuItem>
@@ -131,9 +138,11 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
   );
 };
 
+// Main application component
 export default function App() {
   const [weaponsState, setWeaponsState] = useState(weapons);
 
+  // Handler function to move components between weapons
   const handleMoveComponent = (fromWeapon, toWeapon, component) => {
     setWeaponsState((prevState) => {
       const newState = [...prevState];
