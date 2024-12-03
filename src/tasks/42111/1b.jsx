@@ -1,9 +1,15 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+} from "@/components/ui/card";
 import React, { useState } from "react";
 
-const superheroes = [
+const heroes = [
   {
     name: "Superman",
     powers: ["Super Strength", "Flight", "X-ray Vision"],
@@ -65,7 +71,6 @@ const superheroes = [
       "Black Widow gathers intelligence and completes missions using her espionage skills and advanced gadgets.",
   },
 ];
-
 const situations = [
   {
     situation:
@@ -101,6 +106,23 @@ const situations = [
   },
   {
     situation:
+      "Global Natural Disaster: Multiple earthquakes, tsunamis, and volcanic eruptions threaten global stability.",
+    requiredSuperheroes: ["Aquaman", "Superman", "The Flash"],
+    correctSolution:
+      "Aquaman mitigates tsunamis, Superman stabilizes structures, and The Flash evacuates people from danger zones.",
+    incorrectSolution:
+      "Aquaman focuses on stabilizing structures, Superman evacuates people, and The Flash tries to control tsunamis.",
+    notRequiredSuperheroes: {
+      Batman:
+        "His skills are not effective against large-scale natural disasters.",
+      "Black Widow":
+        "Her espionage skills are not useful in natural disaster scenarios.",
+      "Iron Man":
+        "While helpful in technology-related issues, large-scale natural disasters require more specialized powers.",
+    },
+  },
+  {
+    situation:
       "Biohazard Outbreak: A deadly virus is released, threatening to wipe out humanity.",
     requiredSuperheroes: ["Spider-Man", "Iron Man", "Captain America"],
     correctSolution:
@@ -114,100 +136,124 @@ const situations = [
       Aquaman: "His powers are more effective in water-related scenarios.",
     },
   },
+  {
+    situation:
+      "City-Wide Blackout: A terrorist group causes a massive blackout in a major city, leading to chaos and crime.",
+    requiredSuperheroes: ["Batman", "Black Widow", "The Flash"],
+    correctSolution:
+      "Batman tracks and dismantles the terrorist group, Black Widow infiltrates and gathers intelligence, and The Flash restores order and assists in emergency response.",
+    incorrectSolution:
+      "Batman focuses on restoring order, Black Widow attempts to dismantle the terrorist group alone, and The Flash gathers intelligence.",
+    notRequiredSuperheroes: {
+      Superman:
+        "His abilities are better suited for large-scale crises rather than city-specific issues.",
+      "Wonder Woman":
+        "Her combat skills are not as useful for restoring order and handling technological issues.",
+      "Captain America":
+        "While a strong leader, his skills are less effective in handling a massive blackout and technological sabotage.",
+    },
+  },
 ];
+function SuperheroCheckbox({ hero, onChange, disabled, reason, checked }) {
+  return (
+    <div className="flex items-center space-x-2">
+      <Checkbox
+        id={hero.name}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+      />
+      <label
+        htmlFor={hero.name}
+        className={`cursor-pointer ${disabled ? "text-red-500" : ""}`}
+      >
+        {hero.name} {disabled && `(${reason})`}
+      </label>
+    </div>
+  );
+}
 
-function SituationCard({ situation, selectedHeroes, onHeroSelect }) {
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+function SituationCard({ situation }) {
+  const [selectedHeroes, setSelectedHeroes] = useState([]);
+  const [showSolution, setShowSolution] = useState(false);
 
-  const handleHeroSelect = (hero) => {
+  const handleCheckboxChange = (hero) => {
     if (selectedHeroes.includes(hero)) {
-      onHeroSelect(selectedHeroes.filter((h) => h !== hero));
+      setSelectedHeroes(selectedHeroes.filter((h) => h !== hero));
     } else if (selectedHeroes.length < 3) {
-      if (situation.notRequiredSuperheroes[hero]) {
-        setErrorMessage(
-          `${hero} can't fit: ${situation.notRequiredSuperheroes[hero]}`
-        );
-        setTimeout(() => setErrorMessage(""), 3000);
-      } else {
-        onHeroSelect([...selectedHeroes, hero]);
-      }
+      setSelectedHeroes([...selectedHeroes, hero]);
     }
   };
 
-  React.useEffect(() => {
-    if (
-      selectedHeroes.length === 3 &&
-      selectedHeroes.every((hero) =>
-        situation.requiredSuperheroes.includes(hero)
-      )
-    ) {
-      setSuccessMessage(situation.correctSolution);
-    } else {
-      setSuccessMessage("");
-    }
-  }, [selectedHeroes, situation]);
+  const isCorrectSelection =
+    situation.requiredSuperheroes.every((hero) =>
+      selectedHeroes.includes(hero)
+    ) && selectedHeroes.length === situation.requiredSuperheroes.length;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setShowSolution(true);
+  };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-4">
       <CardHeader>
         <CardTitle>{situation.situation}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {superheroes.map((hero) => (
-            <div key={hero.name} className="flex items-center space-x-2">
-              <Checkbox
-                id={`${situation.situation}-${hero.name}`}
-                checked={selectedHeroes.includes(hero.name)}
-                onCheckedChange={() => handleHeroSelect(hero.name)}
-                disabled={
-                  selectedHeroes.length === 3 &&
-                  !selectedHeroes.includes(hero.name)
-                }
-              />
-              <label htmlFor={`${situation.situation}-${hero.name}`}>
-                {hero.name}
-              </label>
-            </div>
-          ))}
-        </div>
-        {errorMessage && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-        {successMessage && (
-          <Alert className="mt-4">
-            <AlertDescription>{successMessage}</AlertDescription>
-          </Alert>
-        )}
+        <p className="text-sm text-muted-foreground mb-2">
+          Select up to 3 superheroes:
+        </p>
+        {heroes.map((hero) => (
+          <SuperheroCheckbox
+            key={hero.name}
+            hero={hero}
+            onChange={() => handleCheckboxChange(hero.name)}
+            disabled={
+              showSolution &&
+              !situation.requiredSuperheroes.includes(hero.name) &&
+              situation.notRequiredSuperheroes[hero.name]
+            }
+            reason={
+              showSolution ? situation.notRequiredSuperheroes[hero.name] : ""
+            }
+            checked={selectedHeroes.includes(hero.name)}
+          />
+        ))}
       </CardContent>
+      <CardFooter>
+        <form onSubmit={handleSubmit}>
+          <Button type="submit">Submit</Button>
+        </form>
+        {showSolution && (
+          <div className="mt-4">
+            {isCorrectSelection ? (
+              situation.requiredSuperheroes.map((hero) => (
+                <p key={hero} className="text-green-500">
+                  {hero} fits because:{" "}
+                  {situation.correctSolution
+                    .split(". ")
+                    .find((s) => s.includes(hero))}
+                </p>
+              ))
+            ) : (
+              <p className="text-red-500">
+                Try again! Your selection was incorrect.
+              </p>
+            )}
+          </div>
+        )}
+      </CardFooter>
     </Card>
   );
 }
 
 export default function App() {
-  const [selectedHeroes, setSelectedHeroes] = useState(
-    situations.map(() => [])
-  );
-
-  const handleHeroSelect = (situationIndex, heroes) => {
-    const newSelectedHeroes = [...selectedHeroes];
-    newSelectedHeroes[situationIndex] = heroes;
-    setSelectedHeroes(newSelectedHeroes);
-  };
-
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Superhero Puzzle</h1>
+      <h1 className="text-3xl font-bold mb-6">Superhero Puzzle</h1>
       {situations.map((situation, index) => (
-        <SituationCard
-          key={index}
-          situation={situation}
-          selectedHeroes={selectedHeroes[index]}
-          onHeroSelect={(heroes) => handleHeroSelect(index, heroes)}
-        />
+        <SituationCard key={index} situation={situation} />
       ))}
     </div>
   );
