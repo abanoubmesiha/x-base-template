@@ -4,6 +4,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel";
 import React, { useEffect, useState } from "react";
 
@@ -13,25 +15,27 @@ const NumberCarousel = ({ onChange }) => {
   return (
     <Carousel
       opts={{
-        align: "center",
+        align: "start",
         loop: true,
       }}
-      className="w-16 mx-auto"
-      onSelect={(index) => onChange(numbers[index])}
+      orientation="vertical"
+      className="w-full max-w-xs"
     >
-      <CarouselContent>
+      <CarouselContent className="-mt-1 h-[300px]">
         {numbers.map((number) => (
-          <CarouselItem key={number} className="pt-1 md:pt-4">
+          <CarouselItem key={number} className="pt-1 md:basis-1/3">
             <div className="p-1">
               <Card>
-                <CardContent className="flex aspect-square items-center justify-center p-6">
-                  <span className="text-4xl font-semibold">{number}</span>
+                <CardContent className="flex items-center justify-center p-6">
+                  <span className="text-3xl font-semibold">{number}</span>
                 </CardContent>
               </Card>
             </div>
           </CarouselItem>
         ))}
       </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
     </Carousel>
   );
 };
@@ -68,12 +72,12 @@ export default function App() {
           <CardTitle className="text-center">Suitcase Lock</CardTitle>
         </CardHeader>
         <CardContent>
-          <LockDisplay code={code} />
-          <div className="flex justify-center space-x-4">
-            {[0, 1, 2].map((index) => (
+          {/* <LockDisplay code={code} /> */}
+          <div className="flex justify-center space-x-4 my-12">
+            {[0, 1, 2].map((n) => (
               <NumberCarousel
-                key={index}
-                onChange={(value) => handleCodeChange(index, value)}
+                key={n}
+                onChange={(value) => handleCodeChange(n, value)}
               />
             ))}
           </div>
