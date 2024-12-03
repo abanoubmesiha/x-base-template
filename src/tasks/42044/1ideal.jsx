@@ -77,7 +77,6 @@ const sharedComponents = {
 };
 
 const WeaponBox = ({ weapon, onMoveComponent }) => {
-  // const filteredSharedComponents = sharedComponents
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -86,17 +85,23 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        {Object.entries(weapon.components).map(([component, count], i) => (
-          <React.Fragment key={component}>
-            {sharedComponents[component] ? (
-              <ContextMenuSub>
-                <ContextMenuSubTrigger>
-                  {component}: {count}
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent>
-                  {sharedComponents[component]
-                    .filter((w) => w !== weapon.name)
-                    .map((targetWeapon) => (
+        {Object.entries(weapon.components).map(([component, count], i) => {
+          console.log(
+            "🚀 ~ {Object.entries ~ sharedComponents[component]:",
+            sharedComponents[component]
+          );
+          const filteredSharedComponents = sharedComponents[component]?.filter(
+            (w) => w !== weapon.name
+          );
+          return (
+            <React.Fragment key={component}>
+              {filteredSharedComponents?.length > 0 ? (
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    {component}: {count}
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    {filteredSharedComponents?.map((targetWeapon) => (
                       <ContextMenuItem
                         key={targetWeapon}
                         onClick={() =>
@@ -108,18 +113,19 @@ const WeaponBox = ({ weapon, onMoveComponent }) => {
                         to {targetWeapon}
                       </ContextMenuItem>
                     ))}
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-            ) : (
-              <ContextMenuItem>
-                {component}: {count}
-              </ContextMenuItem>
-            )}
-            {i < Object.entries(weapon.components).length - 1 && (
-              <ContextMenuSeparator />
-            )}
-          </React.Fragment>
-        ))}
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
+              ) : (
+                <ContextMenuItem>
+                  {component}: {count}
+                </ContextMenuItem>
+              )}
+              {i < Object.entries(weapon.components).length - 1 && (
+                <ContextMenuSeparator />
+              )}
+            </React.Fragment>
+          );
+        })}
       </ContextMenuContent>
     </ContextMenu>
   );
