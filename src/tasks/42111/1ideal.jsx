@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 
 const superheroes = [
@@ -157,24 +158,18 @@ const situations = [
 ];
 
 function SituationCard({ situation }) {
-  console.log("🚀 ~ SituationCard ~ situation:", situation);
   const [selectedHeroes, setSelectedHeroes] = useState([]);
+  const [disabledHeroes, setDisabledHeroes] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleHeroSelection = (hero) => {
-    if (selectedHeroes.includes(hero)) {
-      setSelectedHeroes(selectedHeroes.filter((h) => h !== hero));
-    } else if (selectedHeroes.length < 3) {
-      if (situation.notRequiredSuperheroes[hero]) {
-        setErrorMessage(
-          `${hero} can't fit: ${situation.notRequiredSuperheroes[hero]}`
-        );
-        setTimeout(() => setErrorMessage(""), 3000);
-      } else {
-        setSelectedHeroes([...selectedHeroes, hero]);
-      }
+  const handleHeroSelection = (v, hero) => {
+    if (v) {
+      setSelectedHeroes((prev) => [...prev, hero]);
+    } else {
+      setSelectedHeroes((prev) => prev.filter((h) => h !== hero));
     }
+    setErrorMessage("");
   };
 
   const handleSubmit = () => {
@@ -183,9 +178,25 @@ function SituationCard({ situation }) {
       situation.requiredSuperheroes.sort().join(",")
     ) {
       setSuccess(true);
+      setErrorMessage("");
+    } else if (selectedHeroes.length < 3) {
+      setErrorMessage("You lost, you need more superheros.");
     } else {
-      setErrorMessage("Incorrect selection. Try again!");
-      setTimeout(() => setErrorMessage(""), 3000);
+      for (const hero of selectedHeroes) {
+        if (!situation.requiredSuperheroes.includes(hero)) {
+          if (situation.notRequiredSuperheroes[hero]) {
+            setErrorMessage(
+              `${hero} can't fit: ${situation.notRequiredSuperheroes[hero]}`
+            );
+          } else {
+            setErrorMessage(
+              `${hero} can't fit, we this hit place for a better fit.`
+            );
+          }
+          setDisabledHeroes((prev) => [...prev, hero]);
+          setSelectedHeroes((prev) => prev.filter((h) => h !== hero));
+        }
+      }
     }
   };
 
@@ -196,20 +207,29 @@ function SituationCard({ situation }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {superheroes.map((hero) => (
-            <div key={hero.name} className="flex items-center space-x-2">
-              <Checkbox
-                id={`${hero.name}`}
-                checked={selectedHeroes.includes(hero.name)}
-                onCheckedChange={() => handleHeroSelection(hero.name)}
-                disabled={
-                  selectedHeroes.length === 3 &&
-                  !selectedHeroes.includes(hero.name)
-                }
-              />
-              <label htmlFor={`${hero.name}`}>{hero.name}</label>
-            </div>
-          ))}
+          {superheroes.map((hero) => {
+            const isDisabled =
+              (selectedHeroes.length === 3 &&
+                !selectedHeroes.includes(hero.name)) ||
+              disabledHeroes.includes(hero.name);
+            return (
+              <div
+                key={hero.name}
+                className={cn(
+                  "flex items-center space-x-2",
+                  isDisabled && "opacity-50"
+                )}
+              >
+                <Checkbox
+                  id={`${hero.name}`}
+                  checked={selectedHeroes.includes(hero.name)}
+                  onCheckedChange={(v) => handleHeroSelection(v, hero.name)}
+                  disabled={isDisabled}
+                />
+                <label htmlFor={`${hero.name}`}>{hero.name}</label>
+              </div>
+            );
+          })}
         </div>
         {errorMessage && (
           <Alert variant="destructive" className="mt-4">
