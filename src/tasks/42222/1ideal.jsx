@@ -1,10 +1,13 @@
+// Importing necessary components from libraries
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Lock, Unlock } from "lucide-react";
 import React, { useState } from "react";
 
+// Define the correct combination for unlocking
 const CORRECT_COMBINATION = [4, 2, 7];
 
+// Component for the number carousel to change the digit value
 const NumberCarousel = ({ value, onChange }) => {
   return (
     <div className="flex flex-col items-center">
@@ -33,10 +36,12 @@ const NumberCarousel = ({ value, onChange }) => {
   );
 };
 
+// Main component to handle the suitcase lock logic
 export default function App() {
-  const [combination, setCombination] = useState([0, 0, 0]);
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [combination, setCombination] = useState([0, 0, 0]); // State to store the current combination
+  const [isUnlocked, setIsUnlocked] = useState(false); // State to track if the lock is unlocked
 
+  // Function to check if the entered combination is correct
   const handleTryOpen = () => {
     if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
       setIsUnlocked(true);
