@@ -1,9 +1,11 @@
+// Importing necessary components and hooks from libraries
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import React, { useState } from "react";
 
+// Component for input fields with label, value, change handler, disabled state, and suffix
 const InputField = ({ label, value, onChange, disabled, suffix }) => (
   <div className="flex flex-col space-y-1">
     <label className="text-sm font-medium">{label}</label>
@@ -24,10 +26,12 @@ const InputField = ({ label, value, onChange, disabled, suffix }) => (
   </div>
 );
 
+// Component to display each result with option to retest
 const ResultItem = ({ label, value, onRetest }) => {
   const [isRetesting, setIsRetesting] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
 
+  // Function to handle retesting, simulating a delay
   const handleRetest = async () => {
     onRetest(true);
     setIsRetesting(true);
@@ -57,6 +61,7 @@ const ResultItem = ({ label, value, onRetest }) => {
   );
 };
 
+// Main component to handle the car manufacturing quality check
 export default function App() {
   const [tirePressures, setTirePressures] = useState(["", "", "", ""]);
   const [brakeFluidLevels, setBrakeFluidLevels] = useState(["", "", "", ""]);
@@ -65,18 +70,21 @@ export default function App() {
   const [tireRestingIndex, setTireRestingIndex] = useState(null);
   const [brakeRestingIndex, setBrakeRestingIndex] = useState(null);
 
+  // Handler for changing tire pressures
   const handleTirePressureChange = (index, value) => {
     const newPressures = [...tirePressures];
     newPressures[index] = value;
     setTirePressures(newPressures);
   };
 
+  // Handler for changing brake fluid levels
   const handleBrakeFluidChange = (index, value) => {
     const newLevels = [...brakeFluidLevels];
     newLevels[index] = value;
     setBrakeFluidLevels(newLevels);
   };
 
+  // Handler for form submission, simulating a delay before setting results
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
