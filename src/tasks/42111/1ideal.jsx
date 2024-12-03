@@ -163,6 +163,8 @@ function SituationCard({ situation }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // Handle change of checkbox according to the state of being checked or not.
+  // Reset errors on that change
   const handleHeroSelection = (v, hero) => {
     if (v) {
       setSelectedHeroes((prev) => [...prev, hero]);
@@ -172,6 +174,9 @@ function SituationCard({ situation }) {
     setErrorMessage("");
   };
 
+  // Handle submit of situation and validate over the correct and incorrect superheroes.
+  // Make sure to display the message of incorrect superheroes responses if exists.
+  // Reset errors on that submit
   const handleSubmit = () => {
     if (
       selectedHeroes.sort().join(",") ===
@@ -208,6 +213,8 @@ function SituationCard({ situation }) {
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {superheroes.map((hero) => {
+            // Disable the heros if already the correct 3 are selected
+            // or if an incorrect hero was selected and validated as incorrect after submision
             const isDisabled =
               (selectedHeroes.length === 3 &&
                 !selectedHeroes.includes(hero.name)) ||
@@ -231,6 +238,7 @@ function SituationCard({ situation }) {
             );
           })}
         </div>
+        {/* Display error and success messages. */}
         {errorMessage && (
           <Alert variant="destructive" className="mt-4">
             <AlertTitle>Error</AlertTitle>
@@ -256,6 +264,7 @@ export default function App() {
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-8">Superhero Puzzle</h1>
       <p className="mb-4">Select up to three superheroes for each situation.</p>
+      {/* Loop over situations */}
       {situations.map((situation) => (
         <SituationCard key={situation.situation} situation={situation} />
       ))}
