@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Lock, Unlock } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const CORRECT_COMBINATION = [4, 2, 7];
 
@@ -37,14 +37,6 @@ export default function App() {
   const [combination, setCombination] = useState([0, 0, 0]);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  useEffect(() => {
-    if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
-      setIsUnlocked(true);
-    } else {
-      setIsUnlocked(false);
-    }
-  }, [combination]);
-
   const handleTryOpen = () => {
     if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
       setIsUnlocked(true);
@@ -72,6 +64,7 @@ export default function App() {
                   const newCombination = [...combination];
                   newCombination[index] = newValue;
                   setCombination(newCombination);
+                  setIsUnlocked(false);
                 }}
               />
             ))}
