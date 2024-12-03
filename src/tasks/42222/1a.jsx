@@ -1,66 +1,100 @@
-import { Carousel } from "@/components/ui/carousel";
-import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronUp, Lock, Unlock } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-const SuitcaseLock = () => {
-  const [combination, setCombination] = useState([0, 0, 0]);
-  const correctCombination = [3, 7, 2]; // Example combination for testing
+const CORRECT_COMBINATION = [4, 2, 7];
 
-  const handleSlideChange = (index, value) => {
-    const newCombination = [...combination];
-    newCombination[index] = value;
-    setCombination(newCombination);
-  };
-
-  const isUnlocked = combination.every(
-    (val, index) => val === correctCombination[index]
-  );
-
+const NumberCarousel = ({ value, onChange }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-8 text-center">
-        Suitcase Lock - Correct Combination: {correctCombination.join("")}
-      </h1>
-      <div className="flex space-x-4">
-        {[0, 1, 2].map((index) => (
-          <Carousel
-            key={index}
-            className="w-24 h-48"
-            orientation="vertical"
-            slidesToShow={3}
-            initialSlide={0}
-            wrapAround={true}
-            onSlideChange={(value) => handleSlideChange(index, value)}
-          >
-            {Array.from({ length: 10 }, (_, i) => i).map((num) => (
-              <div
-                key={num}
-                className="flex items-center justify-center h-full"
-              >
-                <div
-                  className={`text-4xl font-bold ${
-                    num === combination[index]
-                      ? "text-blue-600"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {num}
-                </div>
-              </div>
-            ))}
-          </Carousel>
-        ))}
+    <div className="flex flex-col items-center">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onChange((value + 1) % 10)}
+        className="p-1"
+      >
+        <ChevronUp className="h-4 w-4" />
+      </Button>
+      <div className="flex flex-col items-center justify-center h-24 text-2xl font-bold">
+        <span className="opacity-50">{(value - 1 + 10) % 10}</span>
+        <span className="text-3xl">{value}</span>
+        <span className="opacity-50">{(value + 1) % 10}</span>
       </div>
-      <div className="mt-8">
-        {isUnlocked ? (
-          <p className="text-green-500 text-lg font-semibold">Unlocked!</p>
-        ) : (
-          <p className="text-red-500 text-lg font-semibold">Locked</p>
-        )}
-      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onChange((value - 1 + 10) % 10)}
+        className="p-1"
+      >
+        <ChevronDown className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
 
 export default function App() {
-  return <SuitcaseLock />;
+  const [combination, setCombination] = useState([0, 0, 0]);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
+  useEffect(() => {
+    if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
+      setIsUnlocked(true);
+    } else {
+      setIsUnlocked(false);
+    }
+  }, [combination]);
+
+  const handleTryOpen = () => {
+    if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
+      setIsUnlocked(true);
+    } else {
+      alert("Incorrect combination. Try again!");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center">Suitcase Lock</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center mb-4 text-sm text-gray-500">
+            Correct combination: {CORRECT_COMBINATION.join("-")}
+          </p>
+          <div className="flex justify-center space-x-8 mb-6">
+            {combination.map((value, index) => (
+              <NumberCarousel
+                key={index}
+                value={value}
+                onChange={(newValue) => {
+                  const newCombination = [...combination];
+                  newCombination[index] = newValue;
+                  setCombination(newCombination);
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex justify-center">
+            <Button onClick={handleTryOpen} className="w-full sm:w-auto">
+              Try to open
+            </Button>
+          </div>
+          <div className="mt-6 flex justify-center">
+            {isUnlocked ? (
+              <Unlock className="h-12 w-12 text-green-500" />
+            ) : (
+              <Lock className="h-12 w-12 text-red-500" />
+            )}
+          </div>
+          {isUnlocked && (
+            <p className="text-center mt-4 text-green-500 font-bold">
+              Lock opened successfully!
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

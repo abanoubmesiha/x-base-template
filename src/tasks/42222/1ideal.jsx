@@ -1,100 +1,56 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { ChevronDown, ChevronUp, Lock, Unlock } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
-const NumberCarousel = ({ onChange }) => {
-  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const CORRECT_COMBINATION = [4, 2, 7];
 
-  const [api, setApi] = React.useState(null);
-
-  React.useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    api.on("select", () => {
-      console.log("api.on.select");
-    });
-  }, [api]);
-
+const NumberCarousel = ({ value, onChange }) => {
   return (
-    <Carousel
-      setApi={setApi}
-      opts={{
-        align: "start",
-        loop: true,
-        dragFree: true,
-      }}
-      orientation="vertical"
-      className="w-full max-w-xs"
-    >
-      <CarouselContent className="-mt-1 h-[300px]">
-        {numbers.map((number) => (
-          <CarouselItem key={number} className="pt-1 md:basis-1/3">
-            <div className="p-1">
-              <Card>
-                <CardContent className="flex items-center justify-center p-6">
-                  <span className="text-3xl font-semibold">{number}</span>
-                </CardContent>
-              </Card>
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-      <CarouselPrevious />
-      <CarouselNext />
-    </Carousel>
+    <div className="flex flex-col items-center">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onChange((value + 1) % 10)}
+        className="p-1"
+      >
+        <ChevronUp className="h-4 w-4" />
+      </Button>
+      <div className="flex flex-col items-center justify-center h-24 text-2xl font-bold">
+        <span className="opacity-50">{(value - 1 + 10) % 10}</span>
+        <span className="text-3xl">{value}</span>
+        <span className="opacity-50">{(value + 1) % 10}</span>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onChange((value - 1 + 10) % 10)}
+        className="p-1"
+      >
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 
-const LockDisplay = ({ code }) => (
-  <div className="text-center p-6 pt-3">
-    <small className="d-block">Correct Combination</small>
-    <div className="flex justify-center space-x-4">
-      {code.map((digit, index) => (
-        <Card
-          key={index}
-          className="w-12 h-12 flex items-center justify-center"
-        >
-          <span className="text-2xl font-bold">{digit}</span>
-        </Card>
-      ))}
-    </div>
-  </div>
-);
-
 export default function App() {
-  const [code, setCode] = useState([0, 0, 0]);
-  console.log("🚀 ~ App ~ code:", code);
+  const [combination, setCombination] = useState([0, 0, 0]);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const correctCode = [4, 2, 0]; // Example correct code
-  // const [api, setApi] = React.useState < CarouselApi > null;
-
-  // React.useEffect(() => {
-  //   if (!api) {
-  //     return;
-  //   }
-
-  //   api.on("select", () => {
-  //     console.log("api.on.select");
-  //   });
-  // }, [api]);
 
   useEffect(() => {
-    setIsUnlocked(JSON.stringify(code) === JSON.stringify(correctCode));
-  }, [code]);
+    if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
+      setIsUnlocked(true);
+    } else {
+      setIsUnlocked(false);
+    }
+  }, [combination]);
 
-  const handleCodeChange = (index, value) => {
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
+  const handleTryOpen = () => {
+    if (JSON.stringify(combination) === JSON.stringify(CORRECT_COMBINATION)) {
+      setIsUnlocked(true);
+    } else {
+      alert("Incorrect combination. Try again!");
+    }
   };
 
   return (
@@ -104,33 +60,39 @@ export default function App() {
           <CardTitle className="text-center">Suitcase Lock</CardTitle>
         </CardHeader>
         <CardContent>
-          <LockDisplay code={correctCode} />
-          <div className="flex justify-center space-x-4 my-14">
-            {[0, 1, 2].map((n) => (
-              // {[0].map((n) => (
+          <p className="text-center mb-4 text-sm text-gray-500">
+            Correct combination: {CORRECT_COMBINATION.join("-")}
+          </p>
+          <div className="flex justify-center space-x-8 mb-6">
+            {combination.map((value, index) => (
               <NumberCarousel
-                // setApi={setApi}
-                key={n}
-                onChange={(value) => handleCodeChange(n, value)}
+                key={index}
+                value={value}
+                onChange={(newValue) => {
+                  const newCombination = [...combination];
+                  newCombination[index] = newValue;
+                  setCombination(newCombination);
+                }}
               />
             ))}
           </div>
-          <div className="mt-6 text-center">
-            {isUnlocked ? (
-              <div className="text-green-600 font-bold text-xl">Unlocked!</div>
-            ) : (
-              <div className="text-red-600 font-bold text-xl">Locked</div>
-            )}
-          </div>
-          <div className="mt-4 text-center">
-            <Button
-              onClick={() => setCode([0, 0, 0])}
-              variant="outline"
-              className="mx-auto"
-            >
-              Reset
+          <div className="flex justify-center">
+            <Button onClick={handleTryOpen} className="w-full sm:w-auto">
+              Try to open
             </Button>
           </div>
+          <div className="mt-6 flex justify-center">
+            {isUnlocked ? (
+              <Unlock className="h-12 w-12 text-green-500" />
+            ) : (
+              <Lock className="h-12 w-12 text-red-500" />
+            )}
+          </div>
+          {isUnlocked && (
+            <p className="text-center mt-4 text-green-500 font-bold">
+              Lock opened successfully!
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

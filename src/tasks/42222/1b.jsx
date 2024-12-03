@@ -1,97 +1,88 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-const NumberCarousel = ({ numbers, currentNumber, onChange }) => {
-  return (
-    <Carousel
-      opts={{
-        align: "center",
-        loop: true,
-      }}
-      className="w-16 h-48"
-      onSelect={(index) => onChange(numbers[index])}
-    >
-      <CarouselContent>
-        {numbers.map((number) => (
-          <CarouselItem
-            key={number}
-            className="flex items-center justify-center"
-          >
-            <div
-              className={`text-4xl font-bold ${
-                number === currentNumber ? "text-blue-500" : "text-gray-400"
-              }`}
-            >
-              {number}
-            </div>
-          </CarouselItem>
-        ))}
-      </CarouselContent>
-    </Carousel>
-  );
-};
+const NUMBER_RANGE = Array.from({ length: 10 }, (_, i) => i);
 
-const Lock = ({ correctCombination }) => {
-  const [combination, setCombination] = useState([0, 0, 0]);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const Carousel = ({ value, onChange }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    if (JSON.stringify(combination) === JSON.stringify(correctCombination)) {
-      setIsUnlocked(true);
-    } else {
-      setIsUnlocked(false);
-    }
-  }, [combination, correctCombination]);
-
-  const handleNumberChange = (index, number) => {
-    const newCombination = [...combination];
-    newCombination[index] = number;
-    setCombination(newCombination);
+  const handleChange = (direction) => {
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0) newIndex = NUMBER_RANGE.length - 1;
+    else if (newIndex >= NUMBER_RANGE.length) newIndex = 0;
+    setCurrentIndex(newIndex);
+    onChange(NUMBER_RANGE[newIndex]);
   };
 
   return (
-    <Card className="w-full max-w-sm mx-auto">
+    <div className="flex flex-col items-center">
+      <button onClick={() => handleChange(1)} className="mb-2">
+        ↑
+      </button>
+      {NUMBER_RANGE.slice(currentIndex, currentIndex + 3).map((num, idx) => (
+        <div
+          key={num}
+          className={`text-center ${idx === 1 ? "text-2xl font-bold" : ""}`}
+        >
+          {num}
+        </div>
+      ))}
+      <button onClick={() => handleChange(-1)} className="mt-2">
+        ↓
+      </button>
+    </div>
+  );
+};
+
+const SuitcaseLock = () => {
+  const [combination, setCombination] = useState([0, 0, 0]);
+  const correctCombination = [3, 7, 5]; // Example combination
+
+  const updateCombination = (index, value) => {
+    setCombination((prev) => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const checkCombination = () => {
+    if (JSON.stringify(combination) === JSON.stringify(correctCombination)) {
+      alert("Lock opened!");
+    } else {
+      alert("Wrong combination. Try again.");
+    }
+  };
+
+  return (
+    <Card className="max-w-sm mx-auto mt-10 p-4 sm:p-6">
       <CardHeader>
-        <CardTitle className="text-center">Suitcase Lock</CardTitle>
+        <CardTitle>Combination Lock</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Correct Combo: {correctCombination.join("")}
+        </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="text-center space-y-4">
         <div className="flex justify-center space-x-4">
-          {combination.map((number, index) => (
-            <NumberCarousel
+          {combination.map((_, index) => (
+            <Carousel
               key={index}
-              numbers={numbers}
-              currentNumber={number}
-              onChange={(newNumber) => handleNumberChange(index, newNumber)}
+              value={combination[index]}
+              onChange={(value) => updateCombination(index, value)}
             />
           ))}
         </div>
-        <div className="mt-6 text-center">
-          {isUnlocked ? (
-            <div className="text-green-500 font-bold text-xl">Unlocked!</div>
-          ) : (
-            <div className="text-red-500 font-bold text-xl">Locked</div>
-          )}
-        </div>
+        <Button onClick={checkCombination}>Try to Open</Button>
       </CardContent>
     </Card>
   );
 };
 
 export default function App() {
-  const correctCombination = [4, 2, 7];
-
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">
-        Correct Combination: {correctCombination.join("-")}
-      </h1>
-      <Lock correctCombination={correctCombination} />
+    <div className="min-h-screen bg-background p-4">
+      <SuitcaseLock />
     </div>
   );
 }
