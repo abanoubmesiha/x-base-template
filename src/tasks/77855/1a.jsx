@@ -8,6 +8,7 @@ const CanvasDraw = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [brushColor, setBrushColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(5);
+  const [imageFormat, setImageFormat] = useState("image/png");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,10 +55,10 @@ const CanvasDraw = () => {
   };
 
   const saveCanvas = () => {
-    const image = canvasRef.current.toDataURL("image/png");
+    const image = canvasRef.current.toDataURL(imageFormat);
     const link = document.createElement("a");
     link.href = image;
-    link.download = "drawing.png";
+    link.download = `drawing.${imageFormat.split("/")[1]}`;
     link.click();
   };
 
@@ -88,6 +89,15 @@ const CanvasDraw = () => {
             onChange={(e) => setBrushSize(e.target.value)}
             className="mr-2"
           />
+          <select
+            value={imageFormat}
+            onChange={(e) => setImageFormat(e.target.value)}
+            className="mr-2"
+          >
+            <option value="image/png">PNG</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/gif">GIF</option>
+          </select>
         </div>
         <canvas
           onMouseDown={startDrawing}
