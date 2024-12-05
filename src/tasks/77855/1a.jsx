@@ -11,12 +11,11 @@ const CanvasDraw = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = window.innerWidth * 0.8;
-    canvas.height = window.innerHeight * 0.8;
-    canvas.style.width = `${window.innerWidth * 0.8}px`;
-    canvas.style.height = `${window.innerHeight * 0.8}px`;
-
     const context = canvas.getContext("2d");
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+    canvas.style.width = `${canvas.offsetWidth}px`;
+    canvas.style.height = `${canvas.offsetHeight}px`;
     context.scale(2, 2);
     context.lineCap = "round";
     context.strokeStyle = brushColor;
